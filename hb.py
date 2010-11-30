@@ -1,13 +1,12 @@
 #!/usr/bin/env python3.1
 
-"""Commandline interface."""
+"""Hash Brown commandline interface."""
 
 import getopt
 import sys
 
-import hbdictionary
-import hbhelper
-import hbsugar
+from expand import expand
+from mode import default, dupe, inline, check, embedded
 
 
 def help():
@@ -48,10 +47,8 @@ def main():
         index = 1
         options += "c"
         long_options.append("check")
-    elif sys.argv[1].lower() in hbdictionary.HASH:
-        function = sys.argv[1].lower()
     else:
-        sys.exit(sys.argv[0] + ": Invalid option or unsupported hash type")
+        function = sys.argv[1]
 
     try:
         opts, args = getopt.getopt(sys.argv[index:], options, long_options)
@@ -75,34 +72,22 @@ def main():
             mode = "check"
 
     # expand globs
-    for arg in args[:]:
-        args.extend(hbhelper.expand(arg, recursive))
-        args.pop(0)
+    args = expand(args, recursive)
 
+    output = ""
     if mode is None:
-        for arg in args:
-            if arg == '-':
-                hbsugar.standard_input(function, quiet)
-            else:
-                hbsugar.calculate(function, arg, quiet)
+        output = default(function, args)
     elif mode == "dupe":
-        if len(args) != 2:
-            sys.exit(sys.argv[0] + ": option -d takes exactly two arguments")
-        hbsugar.dupe(function, args[0], args[1], quiet)
+        output = dupe(function, args)
     elif mode == "embedded":
-        for arg in args:
-            hbsugar.embedded(function, arg, quiet)
+        output = embedded(function, args)
     elif mode == "inline":
-        if len(args) % 2 != 0:
-            sys.exit(sys.argv[0] + ": option -i missing file or digest")
-        for i in range(0, len(args), 2):
-            hbsugar.inline(function, args[i], args[i + 1], quiet)
+        output = inline(function, args)
     elif mode == "string":
-        for arg in args:
-            hbsugar.string(function, arg, quiet)
+        pass
     elif mode == "check":
         for arg in args:
-            hbsugar.check(arg, quiet)
+            output = check(arg)
     else:
         sys.exit(sys.argv[0] + ": you are in the fifth dimension")
 
