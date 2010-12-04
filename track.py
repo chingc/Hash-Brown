@@ -17,12 +17,13 @@ def _progress(handle, event):
     elapsed = 0.001  # using zero causes division by zero
     try:
         name = os.path.basename(handle.name)
+        name = name[0:int(len(name) * 0.75)]
         size = os.path.getsize(handle.name)
         while not handle.closed:
             position = handle.tell()
             ratio = position / size
             speed = "{:.2f} MB/s".format(position / elapsed / 1024 ** 2)
-            output = "{} @ {:.2%} ({})".format(name, ratio, speed)
+            output = "{}... @ {:.2%} ({})".format(name, ratio, speed)
             print(output, end="\r", file=sys.stderr)
             event.wait(interval)
             elapsed += interval  # accuracy is not important here
