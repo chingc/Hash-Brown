@@ -23,7 +23,7 @@ def _progress(handle, event):
             position = handle.tell()
             ratio = position / size
             speed = "{:.2f} MB/s".format(position / elapsed / 1024 ** 2)
-            output = "{}... @ {:.2%} ({})".format(name, ratio, speed)
+            output = "{}... {} @ {:.2%}".format(name, speed, ratio)
             print(output, end="\r", file=sys.stderr)
             event.wait(interval)
             elapsed += interval  # accuracy is not important here
