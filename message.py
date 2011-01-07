@@ -8,6 +8,7 @@ def help():
        hb ALGORITHM -e FILE(S)
        hb ALGORITHM -i FILE DIGEST [FILE DIGEST] [...]
        hb ALGORITHM -s "hello, world!"
+       hb ALGORITHM FILE(S)
 
 Algorithms:
     md5, sha1, sha224, sha256, sha384, sha512

@@ -8,9 +8,8 @@ hb md5 -i audio.flac 69afdf17b98ed394964f15ab497e12d2
 Have a file with the checksum in the filename itself?
 hb crc32 -e video_[B7BFA115].mkv
 
-Checklists are also supported, but unlike more simplistic hashing utilities like
-md5, sha1, et cetera, Hash Brown checklists may contain mixed types.  Hash Brown
-also has a handy progress monitor that activates for sufficiently large files.
+Checklists are supported and are allowed to have mixed types.  Hash Brown also
+has a handy progress monitor that activates for sufficiently large files.
 
 
 
@@ -39,6 +38,7 @@ Usage: hb -h | -v
        hb ALGORITHM -e FILE(S)
        hb ALGORITHM -i FILE DIGEST [FILE DIGEST] [...]
        hb ALGORITHM -s "hello, world!"
+       hb ALGORITHM FILE(S)
 
 Algorithms:
     md5, sha1, sha224, sha256, sha384, sha512
