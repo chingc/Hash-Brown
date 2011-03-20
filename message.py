@@ -50,5 +50,5 @@ Contact:
 
 
 def version():
-    """3.01"""
+    """3.02"""
     print(version.__doc__)
