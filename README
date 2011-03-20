@@ -16,7 +16,7 @@ has a handy progress monitor that activates for sufficiently large files.
 
 Installation
 ------------
-Python 3.1 is required, so make sure it's installed and in your $PATH.  Then
+Python 3.2 is required, so make sure it's installed and in your $PATH.  Then
 follow these instructions to install Hash Brown.
 
 1) Download and extract the source code to a directory of your choosing.
