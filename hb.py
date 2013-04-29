@@ -1,172 +1,116 @@
-"""Primary functions."""
+"""Command-line interface for Hash Brown."""
 
-import io
-import os.path
+import argparse
 import sys
+import textwrap
 
-import algorithm
-import check
-import track
-
-
-def _to_stdout(a, b, c):
-    """Print to standard output."""
-    print("{} ({}) = {}".format(a.upper(), b, c))
+import core
 
 
-def _to_stderr(a, b, c):
-    """Print to standard error."""
-    print("{} ({}) = {}".format(a.upper(), b, c), file=sys.stderr)
+def main():
+    def rprint(name, data, result, dest=sys.stdout):
+        """Prints hashing results."""
+        print("{} ({}) = {}".format(name.upper(), data, result), file=dest)
 
+    guaranteed = sorted(core.algorithm.keys())
 
-def _calc(name, path):
-    """Calculate the digest or checksum of a file.
+    parser = argparse.ArgumentParser(
+        usage="%(prog)s -h | %(prog)s [ALGORITHM] OPTION",
+        description="A convenient command-line file hashing utility.",
+        epilog=textwrap.dedent("""
+            When using checklists, the argument specifying the hashing algorithm
+            is ignored.  It will be determined by the checklist.
 
-    Arguments:
-    name -- the name of the algorithm
-    path -- absolute or relative file path
+            A checklist is a plain text file with lines like this:
+            CRC32 (document.txt) = ad0c2001
+            CRC32 (photo.png) = 1629491b
 
-    Returns:
-    a digest or checksum in hexadecimal
+            It can contain different algorithms.
+            CRC32 (document.txt) = ad0c2001
+            CRC32 (photo.png) = 1629491b
+            MD5 (audio.flac) = 69afdf17b98ed394964f15ab497e12d2
+            SHA1 (video.mkv) = 1f09d30c707d53f3d16c530dd73d70a6ce7596a9
 
-    """
-    with open(path, "rb") as data:
-        if os.path.getsize(path) > track.threshold():
-            track.progress(data)
-        return algorithm.get(name)(data)
+            Comments can be on a line by itself, at the beginning, or the end.
+            I am a string.  CRC32 ("hello, world!") = 58988d13  Double quote me!
 
+            %(prog)s 4.0, Ching Chow
+            http://chingc.tumblr.com
+            """),
+        formatter_class=argparse.RawDescriptionHelpFormatter
+        )
 
-def _str(name, string):
-    """Calculate the digest or checksum of a string.
+    parser.add_argument("algorithm",
+        nargs="?",
+        default="sha1",
+        choices=guaranteed,
+        help="{} {}".format(", ".join(guaranteed), "(default: sha1)"),
+        metavar="ALGORITHM"
+        )
 
-    Arguments:
-    name -- the name of the algorithm
-    string -- a string
+    mutex = parser.add_mutually_exclusive_group(required=True)
 
-    Returns:
-    a digest or checksum in hexadecimal
+    mutex.add_argument("-c",
+        help="verify a checklist",
+        metavar="CHECKLIST"
+        )
+    mutex.add_argument("-d",
+        nargs=2,
+        help="see if one is a duplicate of the other",
+        metavar=("FILE1", "FILE2")
+        )
+    mutex.add_argument("-e",
+        nargs="+",
+        help="see if the filename embedded digest matches",
+        metavar="FILE"
+        )
+    mutex.add_argument("-i",
+        nargs="+",
+        help="get the digest of the given input files",
+        metavar="FILE"
+        )
+    mutex.add_argument("-m",
+        nargs=2,
+        help="see if the given digest matches",
+        metavar=("FILE", "DIGEST")
+        )
+    mutex.add_argument("-s",
+        type=lambda s: s.encode(),
+        help="get the digest of a string",
+        metavar="STRING"
+        )
 
-    Notes:
-    All strings are treated as UTF-8.
+    args = parser.parse_args()
+    name = args.algorithm
 
-    """
-    return algorithm.get(name)(io.BytesIO(bytes(string, "utf_8")))
-
-
-def checklist(infile):
-    """Check a checklist.
-
-    Arguments:
-    infile -- the checklist
-
-    Notes:
-    Refer to the README for checklist format.
-
-    """
-    problem = check.path(infile)
-    if problem is not None:
-        _to_stderr("CHECK", infile, problem)
-        return
-    with open(infile, "rb") as infile:
-        for line in infile:
-            info = algorithm.pattern("checklist").search(line.decode("utf_8"))
-            if info is not None:
-                name = info.group(1).lower()
-                path = info.group(2)
-                given = info.group(3)
-                if path.startswith('"') and path.endswith('"'):
-                    _to_stdout(name, path, given == _str(name, path[1:-1]))
-                else:
-                    problem = check.path(path)
-                    if problem is None:
-                        _to_stdout(name, path, given == _calc(name, path))
-                    else:
-                        _to_stderr(name, path, problem)
-
-
-def default(name, path):
-    """Print the digest or checksum of a file.
-
-    Arguments:
-    name -- the name of the algorithm
-    path -- absolute or relative file path
-
-    """
-    problem = check.path(path)
-    if problem is None:
-        _to_stdout(name, path, _calc(name, path))
-    else:
-        _to_stderr(name, path, problem)
-
-
-def dupe(name, path1, path2):
-    """Determine whether two files are identical.
-
-    Arguments:
-    name -- the name of the algorithm
-    path1 -- absolute or relative file path
-    path2 -- absolute or relative file path
-
-    """
-    problem1 = check.path(path1)
-    problem2 = check.path(path2)
-    if problem1 is None and problem2 is None:
-        result1 = _calc(name, path1)
-        _to_stdout(name, path1, result1)
-        result2 = _calc(name, path2) if path1 != path2 else result1
-        _to_stdout(name, path2, result2)
-        print(result1 == result2)
-    else:
-        if problem1 is not None:
-            _to_stderr(name, path1, problem1)
-        if problem2 is not None:
-            _to_stderr(name, path2, problem2)
-
-
-def embedded(name, path):
-    """Determine whether the digest or checksum in a filename is the actual.
-
-    Arguments:
-    name -- the name of the algorithm
-    path -- absolute or relative file path
-
-    """
-    problem = check.path(path)
-    if problem is None:
-        given = algorithm.pattern(name).search(os.path.basename(path))
-        if given is not None:
-            _to_stdout(name, path, given.group(0).lower() == _calc(name, path))
+    if args.c:
+        print("not yet implemented!")
+    elif args.d:
+        try: result1 = core.calculate(name, args.d[0])
+        except Exception as error: print(error, file=sys.stderr)
         else:
-            _to_stderr(name, path, "No digest or checksum found")
+            try: result2 = core.calculate(name, args.d[1])
+            except Exception as error: print(error, file=sys.stderr)
+            else: print(result1 == result2)
+    elif args.e:
+        for e in args.e:
+            try: result = core.match(name, e)
+            except Exception as error: print(error, file=sys.stderr)
+            else: rprint(name, e, result)
+    elif args.i:
+        for i in args.i:
+            try: result = core.calculate(name, i)
+            except Exception as error: print(error, file=sys.stderr)
+            else: rprint(name, i, result)
+    elif args.m:
+        try: result = core.match(name, args.m[0], args.m[1])
+        except Exception as error: print(error, file=sys.stderr)
+        else: rprint(name, args.m[0], result)
+    elif args.s:
+        rprint(name, '"' + args.s.decode() + '"', core.calculate(name, args.s))
     else:
-        _to_stderr(name, path, problem)
+        print("send me your input because you shouldn't be here!")
 
 
-def inline(name, path, given):
-    """Determine whether the given digest or checksum for a file is the actual.
-
-    Arguments:
-    name -- the name of the algorithm
-    path -- absolute or relative file path
-    given -- a digest or checksum
-
-    """
-    problem = check.path(path)
-    if problem is None:
-        _to_stdout(name, path, given.lower() == _calc(name, path))
-    else:
-        _to_stderr(name, path, problem)
-
-
-def string(name, string):
-    """Print the digest or checksum of a string.
-
-    Arguments:
-    name -- the name of the algorithm
-    string -- a string
-
-    Notes:
-    All strings are treated as UTF-8.
-
-    """
-    _to_stdout(name, '"' + string + '"', _str(name, string))
+if __name__ == "__main__":
+    main()
