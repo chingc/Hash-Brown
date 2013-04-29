@@ -89,9 +89,12 @@ def main():
         try: result1 = core.calculate(name, args.d[0])
         except Exception as error: print(error, file=sys.stderr)
         else:
+            rprint(name, args.d[0], result1)
             try: result2 = core.calculate(name, args.d[1])
             except Exception as error: print(error, file=sys.stderr)
-            else: print(result1 == result2)
+            else:
+                rprint(name, args.d[1], result2)
+                print(result1 == result2)
     elif args.e:
         for e in args.e:
             try: result = core.match(name, e)
