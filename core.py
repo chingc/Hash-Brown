@@ -65,15 +65,16 @@ def match(name, data, digest=None):
     If no digest or checksum is given the filename will be checked for one.
 
     """
-    def extract(data):
-        return re.compile(pattern[name]).search(os.path.basename(data)).group(0)
+    def extract(filename):
+        return re.compile(pattern[name]).search(filename).group(0)
 
     def valid(digest):
         return True if re.compile(r"^" + pattern[name] + r"$").match(digest) else False
 
     if not digest:
-        try: digest = extract(data)
-        except: raise ValueError("No digest or checksum found to match against")
+        filename = os.path.basename(data)
+        try: digest = extract(filename)
+        except: raise ValueError("Unable to find {}: '{}'".format(name.upper(), filename))
     if not isinstance(digest, str) or not valid(digest):
-        raise ValueError("Invalid digest or checksum")
+        raise ValueError("Invalid digest or checksum: '{}'".format(digest))
     return digest.lower() == calculate(name, data)
