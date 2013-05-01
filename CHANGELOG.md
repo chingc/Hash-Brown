@@ -1,3 +1,9 @@
+## 4.0
+2013-05-01
+
+- Massive code cleanup and restructuring.  Completely rewritten.
+
+
 ## 3.2
 2011-03-20
 
