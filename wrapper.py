@@ -6,12 +6,9 @@ import zlib
 class _Wrapper:
     def __init__(self, name):
         self.checksum = 0
-        if name == "adler32":
-            self.algorithm = zlib.adler32
-        elif name == "crc32":
-            self.algorithm = zlib.crc32
-        else:
-            raise ValueError("Unsupported checksum function: '{}'".format(name))
+        if name == "adler32": self.algorithm = zlib.adler32
+        elif name == "crc32": self.algorithm = zlib.crc32
+        else: raise ValueError("Unsupported checksum function: '{}'".format(name))
 
     def update(self, data):
         self.checksum = self.algorithm(data, self.checksum)

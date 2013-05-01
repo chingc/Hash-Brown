@@ -8,9 +8,11 @@ import core
 
 
 def main():
-    def rprint(name, data, result, dest=sys.stdout):
+    def rprint(name, data, result):
         """Prints hashing results."""
-        print("{} ({}) = {}".format(name.upper(), data, result), file=dest)
+        if isinstance(data, bytes):
+            data = '"' + data.decode() + '"'
+        print("{} ({}) = {}".format(name.upper(), data, result))
 
     guaranteed = sorted(core.algorithm.keys())
 
@@ -83,37 +85,37 @@ def main():
     args = parser.parse_args()
     name = args.algorithm
 
-    if args.c:
-        print("not yet implemented!")
-    elif args.d:
-        try: result1 = core.calculate(name, args.d[0])
-        except Exception as error: print(error, file=sys.stderr)
-        else:
+    try:
+        if args.c:
+            for name, data, digest in core.parse(args.c):
+                try: rprint(name, data, core.match(name, data, digest))
+                except Exception as error: print(error, file=sys.stderr)
+        elif args.d:
+            result1 = core.calculate(name, args.d[0])
             rprint(name, args.d[0], result1)
-            try: result2 = core.calculate(name, args.d[1])
-            except Exception as error: print(error, file=sys.stderr)
-            else:
-                rprint(name, args.d[1], result2)
-                print(result1 == result2)
-    elif args.e:
-        for e in args.e:
-            try: result = core.match(name, e)
-            except Exception as error: print(error, file=sys.stderr)
-            else: rprint(name, e, result)
-    elif args.i:
-        for i in args.i:
-            try: result = core.calculate(name, i)
-            except Exception as error: print(error, file=sys.stderr)
-            else: rprint(name, i, result)
-    elif args.m:
-        try: result = core.match(name, args.m[0], args.m[1])
-        except Exception as error: print(error, file=sys.stderr)
-        else: rprint(name, args.m[0], result)
-    elif args.s:
-        rprint(name, '"' + args.s.decode() + '"', core.calculate(name, args.s))
-    else:
-        print("send me your input because you shouldn't be here!")
+            result2 = core.calculate(name, args.d[1])
+            rprint(name, args.d[1], result2)
+            print(result1 == result2)
+        elif args.e:
+            for e in args.e:
+                try: rprint(name, e, core.match(name, e))
+                except Exception as error: print(error, file=sys.stderr)
+        elif args.i:
+            for i in args.i:
+                try: rprint(name, i, core.calculate(name, i))
+                except Exception as error: print(error, file=sys.stderr)
+        elif args.m:
+            rprint(name, args.m[0], core.match(name, args.m[0], args.m[1]))
+        elif args.s:
+            rprint(name, '"' + args.s.decode() + '"', core.calculate(name, args.s))
+        else:
+            print("send me your input because you shouldn't be here!", file=sys.stderr)
+    except Exception as error:
+        print(error, file=sys.stderr)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("operation stopped by user", file=sys.stderr)
