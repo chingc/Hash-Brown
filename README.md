@@ -55,10 +55,10 @@ Hash Brown should run on any platform that has Python 3.3.1 installed without th
 
 ## License
 
-Hash Brown is distributed under the Simplified BSD license.  See [LICENSE][license] for more details.
+Hash Brown is Simplified BSD licensed.  See [LICENSE][license] for more details.
 
 
 
 
 [download]: https://github.com/smwst/Hash-Brown/raw/master/hb.zip "Hash Brown"
-[license]: https://github.com/smwst/LICENSE#readme "License"
+[license]: https://github.com/smwst/Hash-Brown/blob/master/LICENSE.md "License"
