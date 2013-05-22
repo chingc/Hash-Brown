@@ -50,7 +50,7 @@ Comments can be on a line by itself, at the beginning, or the end.
 
 ## Support
 
-Hash Brown should run on any platform that has Python 3.3.1 installed without the need for any additional libraries.
+Hash Brown should run on any platform that has Python 3.x installed without the need for any additional libraries.
 
 
 ## License
