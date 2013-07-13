@@ -60,5 +60,5 @@ Hash Brown is Simplified BSD licensed.  See [LICENSE][license] for details.
 
 
 
-[download]: https://github.com/smwst/Hash-Brown/raw/master/hb.zip "Hash Brown"
-[license]: https://github.com/smwst/Hash-Brown/blob/master/LICENSE.md "License"
+[download]: https://github.com/chingc/Hash-Brown/raw/master/hb.zip "Hash Brown"
+[license]: https://github.com/chingc/Hash-Brown/blob/master/LICENSE.md "License"
