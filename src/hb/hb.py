@@ -6,21 +6,21 @@ from threading import Thread
 from time import sleep
 from typing import IO, Tuple, Any
 
-from hb.adapter import Adapter
+from adapter import Adapter
 
 
-HASHLIB_ALGOS = [algo for algo in hashlib.algorithms_guaranteed if "shake" not in algo]
-ZLIB_ALGOS = ["adler32", "crc32"]
+HASHLIBS = sorted([h for h in hashlib.algorithms_guaranteed if "shake" not in h and "_" not in h])
+ZLIBS = ["adler32", "crc32"]
 
 
-def _progress(file_: IO) -> None:
+def _progress(file: IO) -> None:
     """Display hashing progress.
 
-    f -- an open file handle
+    file -- an open file handle
     """
-    fsize, _ = file_.seek(0, 2), file_.seek(0)
-    while not file_.closed:
-        print(f"{round(file_.tell() / fsize * 100)}%", end="\r")
+    fsize, _ = file.seek(0, 2), file.seek(0)
+    while not file.closed:
+        print(f"{round(file.tell() / fsize * 100)}%", end="\r")
         sleep(0.5)
 
 def compute(algo: str, path: str, show_progress: bool = False) -> str:
@@ -32,16 +32,16 @@ def compute(algo: str, path: str, show_progress: bool = False) -> str:
     """
     algo = algo.lower()
     result: Any
-    if algo in HASHLIB_ALGOS:
+    if algo in HASHLIBS:
         result = hashlib.new(algo)
-    elif algo in ZLIB_ALGOS:
+    elif algo in ZLIBS:
         result = Adapter(algo)
     else:
         raise ValueError(f"Unsupported type: '{algo}'")
-    with open(path, "rb") as file_:
+    with open(path, "rb") as file:
         if show_progress:
-            Thread(target=_progress, args=(file_,)).start()
-        for line in file_:
+            Thread(target=_progress, args=(file,)).start()
+        for line in file:
             result.update(line)
     return str(result.hexdigest())
 
@@ -50,5 +50,5 @@ def parse(line: str) -> Tuple[str, str, str]:
 
     line -- a line from the checklist file
     """
-    name, path, _, digest = line.strip().split(" ")
-    return (name, path[1:-1], digest)
+    algo, path, _, digest = line.strip().split(" ")
+    return (algo, path[1:-1], digest)
