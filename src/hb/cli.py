@@ -1,121 +1,76 @@
-"""Command-line interface for Hash Brown."""
+"""Hash Brown CLI"""
 
-import argparse
-import sys
-import textwrap
+import os.path
+from glob import iglob
+from typing import List
 
-import core
+import click
+
+import hb
 
 
-def main():
-    def rprint(name, data, result):
-        """Prints hashing results."""
-        if isinstance(data, bytes):
-            data = '"' + data.decode() + '"'
-        print("{} ({}) = {}".format(name.upper(), data, result))
+@click.group(context_settings=dict(help_option_names=["-h", "--help"]))
+@click.version_option(version="0.1.0")
+def cli() -> None:
+    """Hash Brown: Compute and verify hashes."""
+    pass
 
-    guaranteed = sorted(core.algorithm.keys())
+@cli.command()  # type: ignore
+@click.option("-a", "--algorithm", required=True, type=click.Choice(hb.HASHLIBS + hb.ZLIBS))
+@click.option("-p", "--progress", is_flag=True, help="Display hashing progress.")
+@click.argument("paths", required=True, nargs=-1, type=click.Path())
+def compute(algorithm: str, paths: List[str], progress: bool) -> None:
+    """Compute a hash."""
+    count = 0
+    for path in paths:
+        for filename in iglob(path, recursive=True):
+            if os.path.isfile(filename):
+                click.echo(f"{algorithm} ({filename}) = {hb.compute(algorithm, filename, show_progress=progress)}")
+                count += 1
+        if not count:
+            click.echo(f"Error: No files matched the pattern: '{path}'")
+        count = 0
 
-    parser = argparse.ArgumentParser(
-        usage="%(prog)s -h | %(prog)s [ALGORITHM] OPTION",
-        description="A convenient command-line file hashing utility.",
-        epilog=textwrap.dedent("""
-            When using checklists, the argument specifying the hashing algorithm
-            is ignored.  It will be determined by the checklist.
+@cli.command()  # type: ignore
+@click.option("-a", "--algorithm", required=True, type=click.Choice(hb.HASHLIBS + hb.ZLIBS))
+@click.option("-p", "--progress", is_flag=True, help="Display hashing progress.")
+@click.argument("path", required=True, type=click.Path(exists=True, dir_okay=False))
+@click.argument("digest", required=True)
+def single(algorithm: str, path: str, digest: str, progress: bool) -> None:
+    """Verify a single hash on the command line."""
+    click.echo(f"{algorithm} ({path}) = {digest} {'OK' if digest == hb.compute(algorithm, path, show_progress=progress) else 'BAD'}")
 
-            A checklist is a plain text file with lines like this:
-            CRC32 (document.txt) = ad0c2001
-            CRC32 (photo.png) = 1629491b
-
-            It can contain different algorithms.
-            CRC32 (document.txt) = ad0c2001
-            CRC32 (photo.png) = 1629491b
-            MD5 (audio.flac) = 69afdf17b98ed394964f15ab497e12d2
-            SHA1 (video.mkv) = 1f09d30c707d53f3d16c530dd73d70a6ce7596a9
-
-            Comments can be on a line by itself, at the beginning, or the end.
-            I am a string.  CRC32 ("hello, world!") = 58988d13  Double quote me!
-
-            %(prog)s 4.0, Ching Chow
-            http://chingc.tumblr.com
-            """),
-        formatter_class=argparse.RawDescriptionHelpFormatter
-        )
-
-    parser.add_argument("algorithm",
-        nargs="?",
-        default="sha1",
-        choices=guaranteed,
-        help="{} {}".format(", ".join(guaranteed), "(default: sha1)"),
-        metavar="ALGORITHM"
-        )
-
-    mutex = parser.add_mutually_exclusive_group(required=True)
-
-    mutex.add_argument("-c",
-        help="verify a checklist",
-        metavar="CHECKLIST"
-        )
-    mutex.add_argument("-d",
-        nargs=2,
-        help="see if one is a duplicate of the other",
-        metavar=("FILE1", "FILE2")
-        )
-    mutex.add_argument("-e",
-        nargs="+",
-        help="see if the filename embedded digest matches",
-        metavar="FILE"
-        )
-    mutex.add_argument("-i",
-        nargs="+",
-        help="get the digest of the given input files",
-        metavar="FILE"
-        )
-    mutex.add_argument("-m",
-        nargs=2,
-        help="see if the given digest matches",
-        metavar=("FILE", "DIGEST")
-        )
-    mutex.add_argument("-s",
-        type=lambda s: s.encode(),
-        help="get the digest of a string",
-        metavar="STRING"
-        )
-
-    args = parser.parse_args()
-    name = args.algorithm
-
-    try:
-        if args.c:
-            for name, data, digest in core.parse(args.c):
-                try: rprint(name, data, core.match(name, data, digest))
-                except Exception as error: print(error, file=sys.stderr)
-        elif args.d:
-            result1 = core.calculate(name, args.d[0])
-            rprint(name, args.d[0], result1)
-            result2 = core.calculate(name, args.d[1])
-            rprint(name, args.d[1], result2)
-            print(result1 == result2)
-        elif args.e:
-            for e in args.e:
-                try: rprint(name, e, core.match(name, e))
-                except Exception as error: print(error, file=sys.stderr)
-        elif args.i:
-            for i in args.i:
-                try: rprint(name, i, core.calculate(name, i))
-                except Exception as error: print(error, file=sys.stderr)
-        elif args.m:
-            rprint(name, args.m[0], core.match(name, args.m[0], args.m[1]))
-        elif args.s:
-            rprint(name, '"' + args.s.decode() + '"', core.calculate(name, args.s))
-        else:
-            print("send me your input because you shouldn't be here!", file=sys.stderr)
-    except Exception as error:
-        print(error, file=sys.stderr)
-
+@cli.command()  # type: ignore
+@click.option("-p", "--progress", is_flag=True, help="Display hashing progress.")
+@click.argument("path", required=True, type=click.Path(exists=True, dir_okay=False))
+def verify(path: str, progress: bool) -> None:
+    """Verify multiple hashes with a checksum file."""
+    good = 0
+    bad = 0
+    skip = 0
+    if not hb.parsable(path):
+        click.echo("Error: Checksum file contains bad formatting")
+    else:
+        for algorithm, filepath, digest in hb.parse(path):
+            output = f"{algorithm} ({filepath}) = {digest} "
+            try:
+                computed = hb.compute(algorithm, filepath, show_progress=progress)
+            except FileNotFoundError:
+                click.echo(output + "SKIP: File not found")
+                skip += 1
+            except OSError:
+                click.echo(output + "SKIP: Unable to read file")
+                skip += 1
+            except ValueError as err:
+                click.echo(output + f"SKIP: {err}")
+                skip += 1
+            else:
+                if digest == computed:
+                    good += 1
+                else:
+                    click.echo(output + "BAD")
+                    bad += 1
+        click.echo(f"GOOD: {good}, BAD: {bad}, SKIP: {skip}")
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("operation stopped by user", file=sys.stderr)
+    cli()
