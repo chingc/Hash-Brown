@@ -4,7 +4,7 @@ import hashlib
 
 from threading import Thread
 from time import sleep
-from typing import IO, Tuple, Any
+from typing import IO, Iterator, Tuple, Any
 
 from adapter import Adapter
 
@@ -37,7 +37,7 @@ def compute(algo: str, path: str, show_progress: bool = False) -> str:
     elif algo in ZLIBS:
         result = Adapter(algo)
     else:
-        raise ValueError(f"Unsupported type: '{algo}'")
+        raise ValueError(f"Unsupported algorithm: '{algo}'")
     with open(path, "rb") as file:
         if show_progress:
             fsize, _ = file.seek(0, 2), file.seek(0)
@@ -46,10 +46,12 @@ def compute(algo: str, path: str, show_progress: bool = False) -> str:
             result.update(line)
     return str(result.hexdigest())
 
-def parse(line: str) -> Tuple[str, str, str]:
-    """Parse a line from the checklist file.
+def parse(path: str) -> Iterator[Tuple[str, str, str]]:
+    """Parse lines from a checksum file.
 
-    line -- a line from the checklist file
+    path -- file path
     """
-    algo, path, _, digest = line.strip().split(" ")
-    return (algo, path[1:-1], digest)
+    with open(path, "r") as file:
+        for line in file:
+            algo, path, _, digest = line.strip().split(" ")
+            yield (algo, path[1:-1], digest)
