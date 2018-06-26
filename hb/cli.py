@@ -6,7 +6,7 @@ from typing import List
 
 import click
 
-import hb
+import main as hb
 
 
 @click.group(context_settings=dict(help_option_names=["-h", "--help"]))
