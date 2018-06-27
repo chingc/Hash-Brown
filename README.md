@@ -1,12 +1,8 @@
 # Hash Brown
 
-A convenient command-line file hashing utility.
+[![CircleCI](https://circleci.com/gh/chingc/Hash-Brown.svg?style=shield)](https://circleci.com/gh/chingc/Hash-Brown) [![codecov](https://codecov.io/gh/chingc/Hash-Brown/branch/master/graph/badge.svg)](https://codecov.io/gh/chingc/Hash-Brown) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-
-## Download
-
-Latest source code available [here][download].
-
+A simple command-line file hashing utility.
 
 ## Usage
 
@@ -25,7 +21,6 @@ Verify a file with MD5 quickly:
 Verify a file with the checksum in the filename itself:
 
 `hb.py crc32 -e video_[B7BFA115].mkv`
-
 
 ## Checklist
 
@@ -46,19 +41,3 @@ It can contain different algorithms.
 Comments can be on a line by itself, at the beginning, or the end.
 
     I am a string.  CRC32 ("hello, world!") = 58988d13  Double quote me!
-
-
-## Support
-
-Hash Brown should run on any platform that has Python 3.x installed without the need for any additional libraries.
-
-
-## License
-
-Hash Brown is Simplified BSD licensed.  See [LICENSE][license] for details.
-
-
-
-
-[download]: https://github.com/chingc/Hash-Brown/raw/master/hb.zip "Hash Brown"
-[license]: https://github.com/chingc/Hash-Brown/blob/master/LICENSE.md "License"
