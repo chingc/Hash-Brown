@@ -1,0 +1,3 @@
+# adler32
+
+The quick brown fox jumps over the lazy dog.

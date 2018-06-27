@@ -1,0 +1,3 @@
+# bad sample: missing digest
+
+md5 (test.txt) =

@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+click = "*"
+
+[dev-packages]
+codecov = "*"
+mypy = "*"
+pylint = "*"
+pytest = "*"
+rope = "*"
+
+[requires]
+python_version = "3.6"
