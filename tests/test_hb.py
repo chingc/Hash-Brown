@@ -30,5 +30,4 @@ def test_parse(get_file):
 
     for bad in [1, 2, 3, 4]:
         with pytest.raises(ValueError):
-            for algo, path, digest in parse(get_file(f"checksum_bad_0{bad}.txt")):
-                pass
+            for algo, path, digest in parse(get_file(f"checksum_bad_0{bad}.txt")): pass
