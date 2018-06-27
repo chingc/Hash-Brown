@@ -1,7 +1,7 @@
 """Hash Brown CLI"""
 
-import os.path
 from glob import iglob
+from os.path import isfile
 from typing import List
 
 import click
@@ -24,7 +24,7 @@ def compute(algorithm: str, paths: List[str], progress: bool) -> None:
     count = 0
     for path in paths:
         for filename in iglob(path, recursive=True):
-            if os.path.isfile(filename):
+            if isfile(filename):
                 click.echo(f"{algorithm} ({filename}) = {hb.compute(algorithm, filename, show_progress=progress)}")
                 count += 1
         if not count:
