@@ -1,10 +1,11 @@
 """Fixtures"""
 
 from pathlib import Path
+from typing import Callable
 
 import pytest
 
 
-@pytest.fixture
-def get_file():
-    return lambda x: Path(__file__).parent / "test_files" / x
+@pytest.fixture  # type: ignore
+def get_file() -> Callable[[str], str]:
+    return lambda x: str(Path(__file__).parent / "test_files" / x)

@@ -33,7 +33,9 @@ jobs:
 
       - run:
           name: Mypy
-          command: pipenv run mypy --strict hb
+          command: |
+            pipenv run mypy --strict hb
+            pipenv run mypy --ignore-missing-imports --strict tests
           when: always
 
       - run:
