@@ -42,7 +42,7 @@ jobs:
           # C0301: line-too-long
           command: |
             pipenv run pylint -d C0301 hb
-            pipenv run pylint -d C0111 tests
+            pipenv run pylint -d C0111,C0301 tests
           when: always
 
       - store_test_results:
