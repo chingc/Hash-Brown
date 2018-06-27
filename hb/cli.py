@@ -48,29 +48,26 @@ def verify(path: str, progress: bool) -> None:
     good = 0
     bad = 0
     skip = 0
-    if not hb.parsable(path):
-        click.echo("Error: Checksum file contains bad formatting")
-    else:
-        for algorithm, filepath, digest in hb.parse(path):
-            output = f"{algorithm} ({filepath}) = {digest} "
-            try:
-                computed = hb.compute(algorithm, filepath, show_progress=progress)
-            except FileNotFoundError:
-                click.echo(output + "SKIP: File not found")
-                skip += 1
-            except OSError:
-                click.echo(output + "SKIP: Unable to read file")
-                skip += 1
-            except ValueError as err:
-                click.echo(output + f"SKIP: {err}")
-                skip += 1
+    for algorithm, filepath, digest in hb.parse(path):
+        output = f"{algorithm} ({filepath}) = {digest} "
+        try:
+            computed = hb.compute(algorithm, filepath, show_progress=progress)
+        except FileNotFoundError:
+            click.echo(output + "SKIP: File not found")
+            skip += 1
+        except OSError:
+            click.echo(output + "SKIP: Unable to read file")
+            skip += 1
+        except ValueError as err:
+            click.echo(output + f"SKIP: {err}")
+            skip += 1
+        else:
+            if digest == computed:
+                good += 1
             else:
-                if digest == computed:
-                    good += 1
-                else:
-                    click.echo(output + "BAD")
-                    bad += 1
-        click.echo(f"GOOD: {good}, BAD: {bad}, SKIP: {skip}")
+                click.echo(output + "BAD")
+                bad += 1
+    click.echo(f"GOOD: {good}, BAD: {bad}, SKIP: {skip}")
 
 if __name__ == "__main__":
     cli()

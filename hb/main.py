@@ -46,19 +46,6 @@ def compute(algo: str, path: str, show_progress: bool = False) -> str:
             result.update(line)
     return str(result.hexdigest())
 
-def parsable(path: str) -> bool:
-    """Check the formatting of a checksum file.
-
-    path -- file path
-    """
-    with open(path, "r") as lines:
-        for line in lines:
-            try:
-                _, _, _, _ = line.strip().split(" ")
-            except ValueError:
-                return False
-    return True
-
 def parse(path: str) -> Iterator[Tuple[str, str, str]]:
     """Parse lines from a checksum file.
 
@@ -66,5 +53,12 @@ def parse(path: str) -> Iterator[Tuple[str, str, str]]:
     """
     with open(path, "r") as lines:
         for line in lines:
-            algo, path, _, digest = line.strip().split(" ")
-            yield (algo, path[1:-1], digest)
+            line = line.strip()
+            if not line or line[0] == "#":
+                continue
+            algo, path, _, digest = line.split(" ")
+            parsed = (algo, path[1:-1], digest)
+            if all(parsed):
+                yield parsed
+            else:
+                raise ValueError(f"Bad line in checksum file: '{line}'")
