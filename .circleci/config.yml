@@ -1,43 +1,51 @@
 version: 2
 
 jobs:
-  python-latest:
-    docker:
-      - image: circleci/python:3.6.5
-
+  cache:
+    docker: &python_latest
+      - image: circleci/python:3.7
     steps:
       - checkout
-
-      - restore_cache:
+      - restore_cache: &restore_cache
           key: pip-cache-2018.1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-
       - run:
-          name: Install Dependencies
-          command: pipenv install -d
+          name: Install dependencies
+          command: pipenv sync -d
           environment:
             PIPENV_VENV_IN_PROJECT: 1
-
       - save_cache:
           key: pip-cache-2018.1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
             - .venv
 
+  test:
+    docker: *python_latest
+    steps:
+      - checkout
+      - restore_cache: *restore_cache
       - run:
-          name: Run Tests
+          name: Test
           command: pipenv run coverage run -m pytest --junit-xml=test-results/pytest/results.xml
-
       - run:
-          name: Submit Code Coverage
+          name: Codecov
           command: pipenv run codecov
-          when: always
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+          destination: test-results
 
+  lint:
+    docker: *python_latest
+    steps:
+      - checkout
+      - restore_cache: *restore_cache
       - run:
           name: Mypy
           command: |
-            pipenv run mypy --strict hb
+            pipenv run mypy --ignore-missing-imports --strict hb
             pipenv run mypy --ignore-missing-imports --strict tests
           when: always
-
       - run:
           name: Pylint
           # C0111: missing-docstring
@@ -48,16 +56,26 @@ jobs:
             pipenv run pylint -d C0111,C0301,C0321 tests
           when: always
 
-      - store_test_results:
-          path: test-results
-
-      - store_artifacts:
-          path: test-results
-          destination: test-results
-
 workflows:
   version: 2
 
-  build:
+  commit:
     jobs:
-      - python-latest
+      - cache
+      - test:
+          requires:
+            - cache
+      - lint:
+          requires:
+            - cache
+
+  weekly:
+    jobs:
+      - test
+    triggers:
+      - schedule:
+          cron: "1 0 * * 1"
+          filters:
+            branches:
+              only:
+                - master
