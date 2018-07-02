@@ -12,7 +12,7 @@ from typing import Dict, IO, List
 class Checksum():
 
     file: str = ""
-    digest: Dict[str, str] = field(default_factory=dict)
+    checksum: Dict[str, str] = field(default_factory=dict)
     show_progress: bool = False
     threshold: int = 1024 * 1024 * 200
 
@@ -30,20 +30,20 @@ class Checksum():
             Thread(target=_p, args=(file, fsize)).start()
 
     def _hashlib_compute(self, name: str) -> str:
-        if name in self.digest:
-            return self.digest[name]
+        if name in self.checksum:
+            return self.checksum[name]
         result = hashlib.new(name)
         with open(self.file, "rb") as file:
             if self.show_progress:
                 self._progress(file)
             for line in file:
                 result.update(line)
-        self.digest[name] = result.hexdigest()
-        return self.digest[name]
+        self.checksum[name] = result.hexdigest()
+        return self.checksum[name]
 
     def _zlib_compute(self, name: str) -> str:
-        if name in self.digest:
-            return self.digest[name]
+        if name in self.checksum:
+            return self.checksum[name]
         if name == "adler32":
             result = 1
             update = zlib.adler32
@@ -55,8 +55,8 @@ class Checksum():
                 self._progress(file)
             for line in file:
                 result = update(line, result)
-        self.digest[name] = hex(result)[2:].zfill(8)
-        return self.digest[name]
+        self.checksum[name] = hex(result)[2:].zfill(8)
+        return self.checksum[name]
 
     def blake2b(self) -> str:
         return self._hashlib_compute("blake2b")
