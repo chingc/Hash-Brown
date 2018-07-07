@@ -10,7 +10,10 @@ from typing import Dict, IO, List
 
 @dataclass
 class Checksum():
+    """Compute various secure message digests and checksums.
 
+    Digests, hashes, and checksums will all be referred to as checksum for simplicity.
+    """
     file: str = ""
     checksum: Dict[str, str] = field(default_factory=dict)
     show_progress: bool = False
@@ -18,6 +21,7 @@ class Checksum():
 
     @staticmethod
     def supported() -> List[str]:
+        """A list of supported algorithms."""
         return sorted([x for x in hashlib.algorithms_guaranteed if "_" not in x]) + ["adler32", "crc32"]
 
     def _progress(self, file: IO) -> None:
@@ -59,31 +63,41 @@ class Checksum():
         return self.checksum[name]
 
     def blake2b(self) -> str:
+        """Compute a blake2b checksum."""
         return self._hashlib_compute("blake2b")
 
     def blake2s(self) -> str:
+        """Compute a blake2s checksum."""
         return self._hashlib_compute("blake2s")
 
     def md5(self) -> str:
+        """Compute an md5 checksum."""
         return self._hashlib_compute("md5")
 
     def sha1(self) -> str:
+        """Compute a sha1 checksum."""
         return self._hashlib_compute("sha1")
 
     def sha224(self) -> str:
+        """Compute a sha224 checksum."""
         return self._hashlib_compute("sha224")
 
     def sha256(self) -> str:
+        """Compute a sha256 checksum."""
         return self._hashlib_compute("sha256")
 
     def sha384(self) -> str:
+        """Compute a sha384 checksum."""
         return self._hashlib_compute("sha384")
 
     def sha512(self) -> str:
+        """Compute a sha512 checksum."""
         return self._hashlib_compute("sha512")
 
     def adler32(self) -> str:
+        """Compute an adler32 checksum."""
         return self._zlib_compute("adler32")
 
     def crc32(self) -> str:
+        """Compute a crc32 checksum."""
         return self._zlib_compute("crc32")
