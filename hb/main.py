@@ -5,24 +5,19 @@ import zlib
 from dataclasses import dataclass, field
 from threading import Thread
 from time import sleep
-from typing import Dict, IO, List
+from typing import Dict, IO, Tuple
 
 
-@dataclass
+@dataclass(frozen=True)
 class Checksum():
     """Compute various secure message digests and checksums.
 
-    Digests, hashes, and checksums will all be referred to as checksum for simplicity.
+    Digest, hash, and checksum are all referred to as checksum for simplicity.
     """
-    file: str = ""
+    file: str
     checksum: Dict[str, str] = field(default_factory=dict)
-    show_progress: bool = False
-    threshold: int = 1024 * 1024 * 200
-
-    @staticmethod
-    def supported() -> List[str]:
-        """A list of supported algorithms."""
-        return sorted([x for x in hashlib.algorithms_guaranteed if "_" not in x]) + ["adler32", "crc32"]
+    threshold: int = 200
+    supported: Tuple[str] = field(default=tuple([x for x in sorted(hashlib.algorithms_guaranteed) if "_" not in x] + ["adler32", "crc32"]), init=False, repr=False)
 
     def _progress(self, file: IO) -> None:
         def _p(file: IO, fsize: int) -> None:
@@ -30,7 +25,7 @@ class Checksum():
                 print(f"{round(file.tell() / fsize * 100)}%", end="\r")
                 sleep(0.2)
         fsize, _ = file.seek(0, 2), file.seek(0)
-        if fsize > self.threshold:
+        if fsize > self.threshold * 1024 * 1024:
             Thread(target=_p, args=(file, fsize)).start()
 
     def _hashlib_compute(self, name: str) -> str:
@@ -38,8 +33,7 @@ class Checksum():
             return self.checksum[name]
         result = hashlib.new(name)
         with open(self.file, "rb") as file:
-            if self.show_progress:
-                self._progress(file)
+            self._progress(file)
             for line in file:
                 result.update(line)
         self.checksum[name] = result.hexdigest()
@@ -55,8 +49,7 @@ class Checksum():
             result = 0
             update = zlib.crc32
         with open(self.file, "rb") as file:
-            if self.show_progress:
-                self._progress(file)
+            self._progress(file)
             for line in file:
                 result = update(line, result)
         self.checksum[name] = hex(result)[2:].zfill(8)

@@ -1,7 +1,7 @@
 """Fixtures"""
 
 from pathlib import Path
-from typing import List
+from typing import Tuple
 
 import pytest
 
@@ -11,8 +11,8 @@ from hb.main import Checksum
 _FOX = str(Path(__file__).parent / "test_files" / "fox.txt")
 
 @pytest.fixture  # type: ignore
-def supported() -> List[str]:
-    return Checksum.supported()
+def supported() -> Tuple[str]:
+    return Checksum.supported
 
 @pytest.fixture  # type: ignore
 def blake2b() -> str:
