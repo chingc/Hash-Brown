@@ -16,8 +16,8 @@ class Checksum():
     """
     file: str
     checksum: Dict[str, str] = field(default_factory=dict)
-    threshold: int = 200
     supported: Tuple[str] = field(default=tuple([x for x in sorted(hashlib.algorithms_guaranteed) if "_" not in x] + ["adler32", "crc32"]), init=False, repr=False)
+    threshold: int = 200
 
     def _progress(self, file: IO) -> None:
         def _p(file: IO, fsize: int) -> None:
@@ -54,6 +54,19 @@ class Checksum():
                 result = update(line, result)
         self.checksum[name] = hex(result)[2:].zfill(8)
         return self.checksum[name]
+
+    def compute(self, algorithm: str) -> str:
+        """Compute a checksum."""
+        if algorithm not in self.supported:
+            raise ValueError(f"Unsupported algorithm: '{algorithm}'")
+        elif algorithm in ["adler32", "crc32"]:
+            return self._zlib_compute(algorithm)
+        else:
+            return self._hashlib_compute(algorithm)
+
+    def print(self, algorithm: str) -> str:
+        """Pretty print."""
+        return f"{algorithm} ({self.file}) = {self.compute(algorithm)}"
 
     def blake2b(self) -> str:
         """Compute a blake2b checksum."""
