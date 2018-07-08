@@ -50,8 +50,13 @@ jobs:
           name: Pylint
           # C0111: missing-docstring
           # C0301: line-too-long
+          # C0411: wrong-import-order
+          # E1120: no-value-for-parameter
+          # E1135: unsupported-membership-test
+          # E1136: unsubscriptable-object
+          # E1137: unsupported-assignment-operation
           command: |
-            pipenv run pylint -d C0301 hb
+            pipenv run pylint -d C0301,C0411,E1120,E1135,E1136,E1137 hb
             pipenv run pylint -d C0111,C0301 tests
           when: always
 
