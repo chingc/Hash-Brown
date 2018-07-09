@@ -1,14 +1,23 @@
 """Fixtures"""
 
 from pathlib import Path
-from typing import Tuple
+from typing import List, Tuple
 
 import pytest
 
 from hb.main import Checksum
 
 
-_FOX = str(Path(__file__).parent / "test_files" / "fox.txt")
+_TEST_FILES = Path(__file__).parent / "test_files"
+_FOX = str(_TEST_FILES / "fox.txt")
+
+@pytest.fixture  # type: ignore
+def good_checklists() -> List[str]:
+    return [str(_TEST_FILES / "checklist_good.txt")]
+
+@pytest.fixture  # type: ignore
+def bad_checklists() -> List[str]:
+    return [str(_TEST_FILES / f"checklist_bad_0{i}.txt") for i in [1, 2, 3, 4]]
 
 @pytest.fixture  # type: ignore
 def supported() -> Tuple[str]:

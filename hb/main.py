@@ -5,7 +5,7 @@ import zlib
 from dataclasses import dataclass, field
 from threading import Thread
 from time import sleep
-from typing import Dict, IO, Tuple
+from typing import Dict, IO, List, Tuple
 
 
 @dataclass(frozen=True)
@@ -18,6 +18,23 @@ class Checksum():
     checksum: Dict[str, str] = field(default_factory=dict)
     supported: Tuple[str] = field(default=tuple([x for x in sorted(hashlib.algorithms_guaranteed) if "_" not in x] + ["adler32", "crc32"]), init=False, repr=False)
     threshold: int = 200
+
+    @staticmethod
+    def parse(file: str) -> List[Tuple[str, str, str]]:
+        """Parse lines from a checksum file."""
+        parsed_lines = []
+        with open(file, "r") as lines:
+            for line in lines:
+                line = line.strip()
+                if not line or line[0] == "#":  # skip blank lines and comments
+                    continue
+                algorithm, path, _, checksum = line.split(" ")
+                parsed = (algorithm, path[1:-1], checksum)  # remove parentheses around path
+                if all(parsed):
+                    parsed_lines.append(parsed)
+                else:
+                    raise ValueError(f"Bad line in checksum file: '{line}'")
+        return parsed_lines
 
     def _progress(self, file: IO) -> None:
         def _p(file: IO, fsize: int) -> None:

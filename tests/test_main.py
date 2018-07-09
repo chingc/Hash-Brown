@@ -1,16 +1,22 @@
 """Tests"""
 
-from typing import Tuple
+from typing import List, Tuple
 
-# def test_parse(get_file: Callable[[str], str]) -> None:
-#     for algo, path, digest in parse(get_file("checksum_good.txt")):
-#         assert algo == "md5"
-#         assert path == "test.txt"
-#         assert digest == "c08420f4c716f3814c268dd845356276"
+import pytest
 
-#     for bad in [1, 2, 3, 4]:
-#         with pytest.raises(ValueError):
-#             for algo, path, digest in parse(get_file(f"checksum_bad_0{bad}.txt")): pass
+from hb.main import Checksum
+
+
+def test_parse(good_checklists: List[str], bad_checklists: List[str]) -> None:
+    for checklist in good_checklists:
+        for algorithm, path, checksum in Checksum.parse(checklist):
+            assert algorithm == "md5"
+            assert path == "test.txt"
+            assert checksum == "c08420f4c716f3814c268dd845356276"
+
+    for checklist in bad_checklists:
+        with pytest.raises(ValueError):
+            for algorithm, path, checksum in Checksum.parse(checklist): pass
 
 def test_supported(supported: Tuple[str]) -> None:
     assert supported == ("blake2b", "blake2s", "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "adler32", "crc32")
