@@ -1,6 +1,7 @@
 """Hash Brown"""
 
 import hashlib
+import re
 import zlib
 from dataclasses import dataclass, field
 from threading import Thread
@@ -28,12 +29,10 @@ class Checksum():
                 line = line.strip()
                 if not line or line[0] == "#":  # skip blank lines and comments
                     continue
-                algorithm, path, _, checksum = line.split(" ")
-                parsed = (algorithm, path[1:-1], checksum)  # remove parentheses around path
-                if all(parsed):
-                    parsed_lines.append(parsed)
-                else:
+                match = re.match(r"(\w+)\s?\((.+)\)\s?=\s?(\w+)", line)
+                if not match:
                     raise ValueError(f"Bad line in checksum file: '{line}'")
+                parsed_lines.append(match.group(1, 2, 3))
         return parsed_lines
 
     def _progress(self, file: IO) -> None:

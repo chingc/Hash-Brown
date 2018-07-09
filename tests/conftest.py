@@ -17,7 +17,7 @@ def good_checklists() -> List[str]:
 
 @pytest.fixture  # type: ignore
 def bad_checklists() -> List[str]:
-    return [str(_TEST_FILES / f"checklist_bad_0{i}.txt") for i in [1, 2, 3, 4]]
+    return [str(_TEST_FILES / f"checklist_bad_0{i}.txt") for i in range(1, 4)]
 
 @pytest.fixture  # type: ignore
 def supported() -> str:
