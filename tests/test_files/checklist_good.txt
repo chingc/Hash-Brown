@@ -1,3 +1,3 @@
-# Sample
+# good
 
 md5 (test.txt) = c08420f4c716f3814c268dd845356276
