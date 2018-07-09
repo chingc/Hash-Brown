@@ -1,6 +1,6 @@
 """Tests"""
 
-from typing import List, Tuple
+from typing import List
 
 import pytest
 
@@ -18,8 +18,8 @@ def test_parse(good_checklists: List[str], bad_checklists: List[str]) -> None:
         with pytest.raises(ValueError):
             for algorithm, path, checksum in Checksum.parse(checklist): pass
 
-def test_supported(supported: Tuple[str]) -> None:
-    assert supported == ("blake2b", "blake2s", "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "adler32", "crc32")
+def test_supported(supported: str) -> None:
+    assert supported == "blake2b blake2s md5 sha1 sha224 sha256 sha384 sha512 adler32 crc32"
 
 def test_blake2b(blake2b: str) -> None:
     assert blake2b == "1e5bbd57cc8fcdea22e4155f43672f3f3e655295c21a15405d1844b4be90cced030064a57e231b989b85db4a8a9e47accbd60be95608e52203da27b7cb18c85e"

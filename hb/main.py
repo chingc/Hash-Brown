@@ -16,7 +16,7 @@ class Checksum():
     """
     file: str
     checksum: Dict[str, str] = field(default_factory=dict)
-    supported: Tuple[str] = field(default=tuple([x for x in sorted(hashlib.algorithms_guaranteed) if "_" not in x] + ["adler32", "crc32"]), init=False, repr=False)
+    supported: str = field(default=" ".join([x for x in sorted(hashlib.algorithms_guaranteed) if "_" not in x] + ["adler32", "crc32"]), init=False, repr=False)
     threshold: int = 200
 
     @staticmethod

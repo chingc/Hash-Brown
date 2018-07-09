@@ -1,7 +1,7 @@
 """Fixtures"""
 
 from pathlib import Path
-from typing import List, Tuple
+from typing import List
 
 import pytest
 
@@ -20,7 +20,7 @@ def bad_checklists() -> List[str]:
     return [str(_TEST_FILES / f"checklist_bad_0{i}.txt") for i in [1, 2, 3, 4]]
 
 @pytest.fixture  # type: ignore
-def supported() -> Tuple[str]:
+def supported() -> str:
     return Checksum.supported
 
 @pytest.fixture  # type: ignore
