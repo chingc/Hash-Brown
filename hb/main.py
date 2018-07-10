@@ -6,7 +6,7 @@ import zlib
 from dataclasses import dataclass, field
 from threading import Thread
 from time import sleep
-from typing import Dict, IO, List, Tuple
+from typing import Dict, IO, List, Sequence
 
 
 @dataclass(frozen=True)
@@ -21,7 +21,7 @@ class Checksum():
     threshold: int = 200
 
     @staticmethod
-    def parse(file: str) -> List[Tuple[str, str, str]]:
+    def parse(file: str) -> List[Sequence[str]]:
         """Parse lines from a checksum file."""
         parsed_lines = []
         with open(file, "r") as lines:
