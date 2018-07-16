@@ -22,31 +22,31 @@ def test_supported(supported: str) -> None:
     assert supported == "blake2b blake2s md5 sha1 sha224 sha256 sha384 sha512 adler32 crc32"
 
 def test_blake2b(blake2b: str) -> None:
-    assert blake2b == "1e5bbd57cc8fcdea22e4155f43672f3f3e655295c21a15405d1844b4be90cced030064a57e231b989b85db4a8a9e47accbd60be95608e52203da27b7cb18c85e"
+    assert blake2b == "20a9ed5b422c04cf7328b36c0d4ad235408d034bee5a15d77a4185c1bf2c30202d340c212e872d1074f3556f428357e2503b749f3e198b59a74313ad2975a951"
 
 def test_blake2s(blake2s: str) -> None:
-    assert blake2s == "462b84b6ed0c29b302c4f0207f2b344a8c1ade6b5d5ff8a326fc681681a35899"
+    assert blake2s == "668e0a8671f032f313c8a12d24f5c8669259ba6d9a9f6f62451ea33fda9f2f79"
 
 def test_md5(md5: str) -> None:
-    assert md5 == "f2789658fd0737100f4dd1fac58c08e9"
+    assert md5 == "37c4b87edffc5d198ff5a185cee7ee09"
 
 def test_sha1(sha1: str) -> None:
-    assert sha1 == "5aaf0a05ace3134ac1dc48004c0eacd9003eff5d"
+    assert sha1 == "be417768b5c3c5c1d9bcb2e7c119196dd76b5570"
 
 def test_sha224(sha224: str) -> None:
-    assert sha224 == "6338d3bc74dbbb5048cc2511db3bb639d4666d431574ca1c47ba021d"
+    assert sha224 == "62e514e536e4ed4633eeec99d60f97b4d95889227975d975b2ad0de3"
 
 def test_sha256(sha256: str) -> None:
-    assert sha256 == "22f54567ed79dcf2423e7202a02482ce1406e42152e158ba8e0f44c6bbc6eaf9"
+    assert sha256 == "c03905fcdab297513a620ec81ed46ca44ddb62d41cbbd83eb4a5a3592be26a69"
 
 def test_sha384(sha384: str) -> None:
-    assert sha384 == "de3c836b44e17e878ee3461a6d3d86abd037b6b9cc806e66ca30b5a14302bce48668dc2b68bc3a2f2b0fdb52d91a7483"
+    assert sha384 == "f565ad8f9c76cf8c4a2e145e712df740702e066a5908f6285eafa1a83a623e882207643ce5ec29628ff0186150275ef3"
 
 def test_sha512(sha512: str) -> None:
-    assert sha512 == "b62a16f71f55b7baf52a4074238f85dc9543eb11a04b8d568fac299a9aec36f3b63b9b03b2101a5988ed51f8080d17f55726a1a06b5330040c94f4fa455f13a7"
+    assert sha512 == "a12ac6bdd854ac30c5cc5b576e1ee2c060c0d8c2bec8797423d7119aa2b962f7f30ce2e39879cbff0109c8f0a3fd9389a369daae45df7d7b286d7d98272dc5b1"
 
 def test_adler32(adler32: str) -> None:
-    assert adler32 == "7bb40ff1"
+    assert adler32 == "6bc00fe4"
 
 def test_crc32(crc32: str) -> None:
-    assert crc32 == "55f9bb0b"
+    assert crc32 == "6d93c138"
