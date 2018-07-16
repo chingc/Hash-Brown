@@ -17,7 +17,7 @@ def _algorithm_mode(algorithm: str, file: str, given: str) -> None:
     computed = 0
     for filename in iglob(file, recursive=True):
         if isfile(filename):
-            actual = Checksum(filename).compute(algorithm)  # type: ignore
+            actual = Checksum(filename).compute(algorithm)
             if given:
                 output = f"{algorithm} ({filename}) = {given}"
                 output += f" {click.style('OK', fg='green') if _is_match(actual, given) else click.style(f'ACTUAL: {actual}', fg='red')}"
@@ -33,7 +33,7 @@ def _check_mode(file: str) -> None:
         for algorithm, filename, given in Checksum.parse(file):
             output = f"{algorithm} ({filename}) = {given}"
             try:
-                actual = Checksum(filename).compute(algorithm)  # type: ignore
+                actual = Checksum(filename).compute(algorithm)
             except FileNotFoundError:
                 output += f" {click.style('SKIP: File not found', fg='yellow')}"
             except OSError:
