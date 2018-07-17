@@ -19,10 +19,10 @@ def _algorithm_mode(algorithm: str, file: str, given: str) -> None:
         if isfile(filename):
             actual = Checksum(filename).compute(algorithm)
             if given:
-                output = f"{algorithm} ({filename}) = {given}"
+                output = Checksum.print(algorithm, filename, given)
                 output += f" {click.style('OK', fg='green') if _is_match(actual, given) else click.style(f'ACTUAL: {actual}', fg='red')}"
             else:
-                output = f"{algorithm} ({filename}) = {actual}"
+                output = Checksum.print(algorithm, filename, actual)
             click.echo(output)
             computed += 1
     if not computed:
@@ -31,7 +31,7 @@ def _algorithm_mode(algorithm: str, file: str, given: str) -> None:
 def _check_mode(file: str) -> None:
     try:
         for algorithm, filename, given in Checksum.parse(file):
-            output = f"{algorithm} ({filename}) = {given}"
+            output = Checksum.print(algorithm, filename, given)
             try:
                 actual = Checksum(filename).compute(algorithm)
             except FileNotFoundError:

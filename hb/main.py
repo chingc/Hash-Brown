@@ -35,6 +35,11 @@ class Checksum():
                 parsed_lines.append(match.group(1, 2, 3))
         return parsed_lines
 
+    @staticmethod
+    def print(algorithm: str, file: str, checksum: str) -> str:
+        """BSD style checksum output."""
+        return f"{algorithm} ({file}) = {checksum}"
+
     def _progress(self, file: IO) -> None:
         def _p(file: IO, fsize: int) -> None:
             while not file.closed:
@@ -79,10 +84,6 @@ class Checksum():
             return self._zlib_compute(algorithm)
         else:
             return self._hashlib_compute(algorithm)
-
-    def print(self, algorithm: str) -> str:
-        """Pretty print."""
-        return f"{algorithm} ({self.file}) = {self.compute(algorithm)}"
 
     def blake2b(self) -> str:
         """Compute a blake2b checksum."""

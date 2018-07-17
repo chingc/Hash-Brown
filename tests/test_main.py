@@ -18,6 +18,9 @@ def test_parse(good_checklists: List[str], bad_checklists: List[str]) -> None:
         with pytest.raises(ValueError):
             for algorithm, path, checksum in Checksum.parse(checklist): pass
 
+def test_print() -> None:
+    assert Checksum.print("a", "b", "c") == "a (b) = c"
+
 def test_supported(supported: str) -> None:
     assert supported == "blake2b blake2s md5 sha1 sha224 sha256 sha384 sha512 adler32 crc32"
 
