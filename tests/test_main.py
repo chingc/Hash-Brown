@@ -24,6 +24,10 @@ def test_print() -> None:
 def test_supported(supported: str) -> None:
     assert supported == "blake2b blake2s md5 sha1 sha224 sha256 sha384 sha512 adler32 crc32"
 
+def test_unsupported() -> None:
+    with pytest.raises(ValueError):
+        Checksum(".").compute("unsupported")
+
 def test_blake2b(blake2b: str) -> None:
     assert blake2b == "20a9ed5b422c04cf7328b36c0d4ad235408d034bee5a15d77a4185c1bf2c30202d340c212e872d1074f3556f428357e2503b749f3e198b59a74313ad2975a951"
 
@@ -53,3 +57,12 @@ def test_adler32(adler32: str) -> None:
 
 def test_crc32(crc32: str) -> None:
     assert crc32 == "6d93c138"
+
+def test_via_compute(checksum_obj: Checksum) -> None:
+    assert checksum_obj.compute("md5") == "37c4b87edffc5d198ff5a185cee7ee09"
+    assert checksum_obj.compute("crc32") == "6d93c138"
+
+    # should not actually go through full compute again
+    # this covers a few lines for code coverage
+    assert checksum_obj.md5() == "37c4b87edffc5d198ff5a185cee7ee09"
+    assert checksum_obj.crc32() == "6d93c138"

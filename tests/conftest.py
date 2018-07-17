@@ -62,3 +62,7 @@ def adler32() -> str:
 @pytest.fixture  # type: ignore
 def crc32() -> str:
     return Checksum(_FOX).crc32()  # type: ignore
+
+@pytest.fixture  # type: ignore
+def checksum_obj() -> Checksum:
+    return Checksum(_FOX, threshold=0)
