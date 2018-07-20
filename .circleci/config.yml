@@ -2,49 +2,37 @@ version: 2
 
 jobs:
   cache:
-    docker: &python_latest
+    docker: &py37
       - image: circleci/python:3.7
     steps:
       - checkout
-      - restore_cache: &restore_cache
-          key: pip-cache-2018.1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+      - restore_cache: &cache_key
+          key: pip-cache-v1-{{ .Branch }}-{{ checksum "pyproject.lock" }}
       - run:
           name: Install dependencies
-          command: pipenv sync -d
-          environment:
-            PIPENV_VENV_IN_PROJECT: 1
+          command: |
+            python -m venv .venv
+            source .venv/bin/activate
+            pip install poetry
+            poetry config settings.virtualenvs.in-project true
+            poetry install
       - save_cache:
-          key: pip-cache-2018.1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          <<: *cache_key
           paths:
             - .venv
 
-  test:
-    docker: *python_latest
-    steps:
-      - checkout
-      - restore_cache: *restore_cache
-      - run:
-          name: Test
-          command: pipenv run coverage run -m pytest --junit-xml=test-results/pytest/results.xml
-      - run:
-          name: Codecov
-          command: pipenv run codecov
-      - store_test_results:
-          path: test-results
-      - store_artifacts:
-          path: test-results
-          destination: test-results
-
   lint:
-    docker: *python_latest
+    docker: *py37
     steps:
       - checkout
-      - restore_cache: *restore_cache
+      - restore_cache:
+          <<: *cache_key
       - run:
           name: Mypy
           command: |
-            pipenv run mypy --ignore-missing-imports --strict hb
-            pipenv run mypy --ignore-missing-imports --strict tests
+            source .venv/bin/activate
+            poetry run mypy --ignore-missing-imports --strict hb
+            poetry run mypy --ignore-missing-imports --strict tests
           when: always
       - run:
           name: Pylint
@@ -58,9 +46,32 @@ jobs:
           # E1136: unsubscriptable-object
           # E1137: unsupported-assignment-operation
           command: |
-            pipenv run pylint -d C0301,C0411,E1101,E1120,E1135,E1136,E1137 hb
-            pipenv run pylint -d C0111,C0301,C0321 tests
+            source .venv/bin/activate
+            poetry run pylint -d C0301,C0411,E1101,E1120,E1135,E1136,E1137 hb
+            poetry run pylint -d C0111,C0301,C0321 tests
           when: always
+
+  test:
+    docker: *py37
+    steps:
+      - checkout
+      - restore_cache:
+          <<: *cache_key
+      - run:
+          name: Test
+          command: |
+            source .venv/bin/activate
+            poetry run coverage run -m pytest --junit-xml=test-results/pytest/results.xml
+      - run:
+          name: Codecov
+          command: |
+            source .venv/bin/activate
+            poetry run codecov
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+          destination: test-results
 
 workflows:
   version: 2
@@ -77,6 +88,7 @@ workflows:
 
   weekly:
     jobs:
+      - lint
       - test
     triggers:
       - schedule:
