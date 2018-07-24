@@ -22,7 +22,7 @@ def test_print() -> None:
     assert Checksum.print("a", "b", "c") == "a (b) = c"
 
 def test_supported(supported: str) -> None:
-    assert supported == "blake2b blake2s md5 sha1 sha224 sha256 sha384 sha512 adler32 crc32"
+    assert " ".join(supported) == "blake2b blake2s md5 sha1 sha224 sha256 sha384 sha512 adler32 crc32"
 
 def test_unsupported() -> None:
     with pytest.raises(ValueError):
@@ -58,11 +58,11 @@ def test_adler32(adler32: str) -> None:
 def test_crc32(crc32: str) -> None:
     assert crc32 == "6d93c138"
 
-def test_via_compute(checksum_obj: Checksum) -> None:
-    assert checksum_obj.compute("md5") == "37c4b87edffc5d198ff5a185cee7ee09"
-    assert checksum_obj.compute("crc32") == "6d93c138"
+def test_via_get(checksum_obj: Checksum) -> None:
+    assert checksum_obj.get("md5") == "37c4b87edffc5d198ff5a185cee7ee09"
+    assert checksum_obj.get("crc32") == "6d93c138"
 
     # should not actually go through full compute again
-    # this covers a few lines for code coverage
-    assert checksum_obj.md5() == "37c4b87edffc5d198ff5a185cee7ee09"
-    assert checksum_obj.crc32() == "6d93c138"
+    # this covers some lines for code coverage
+    assert checksum_obj.md5 == "37c4b87edffc5d198ff5a185cee7ee09"
+    assert checksum_obj.crc32 == "6d93c138"

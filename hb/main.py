@@ -6,19 +6,19 @@ import zlib
 from dataclasses import dataclass, field
 from threading import Thread
 from time import sleep
-from typing import Dict, IO, List, Sequence
+from typing import Dict, IO, List, Sequence, Tuple
 
 
-@dataclass(frozen=True)
+@dataclass
 class Checksum():
-    """Compute various secure message digests and checksums.
+    """Compute various checksums.
 
     Digest, hash, and checksum are all referred to as checksum for simplicity.
     """
-    file: str
-    checksum: Dict[str, str] = field(default_factory=dict)
-    supported: str = field(default=" ".join([x for x in sorted(hashlib.algorithms_guaranteed) if "_" not in x] + ["adler32", "crc32"]), init=False, repr=False)
-    threshold: int = 200
+    path: str
+    checksums: Dict[str, str] = field(default_factory=dict, init=False)
+    supported: Tuple = field(default=("blake2b", "blake2s", "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "adler32", "crc32"), repr=False, init=False)
+    threshold: int = field(default=200, repr=False)
 
     @staticmethod
     def parse(file: str) -> List[Sequence[str]]:
@@ -50,77 +50,89 @@ class Checksum():
             Thread(target=_p, args=(file, fsize)).start()
 
     def _hashlib_compute(self, name: str) -> str:
-        if name in self.checksum:
-            return self.checksum[name]
         result = hashlib.new(name)
-        with open(self.file, "rb") as file:
+        with open(self.path, "rb") as file:
             self._progress(file)
             for line in file:
                 result.update(line)
-        self.checksum[name] = result.hexdigest()
-        return self.checksum[name]
+        return result.hexdigest()
 
     def _zlib_compute(self, name: str) -> str:
-        if name in self.checksum:
-            return self.checksum[name]
         if name == "adler32":
             result = 1
             update = zlib.adler32
         elif name == "crc32":
             result = 0
             update = zlib.crc32
-        with open(self.file, "rb") as file:
+        with open(self.path, "rb") as file:
             self._progress(file)
             for line in file:
                 result = update(line, result)
-        self.checksum[name] = hex(result)[2:].zfill(8)
-        return self.checksum[name]
+        return hex(result)[2:].zfill(8)
 
     def compute(self, algorithm: str) -> str:
         """Compute a checksum."""
         if algorithm not in self.supported:
             raise ValueError(f"Unsupported algorithm: '{algorithm}'")
         elif algorithm in ["adler32", "crc32"]:
-            return self._zlib_compute(algorithm)
+            result = self._zlib_compute(algorithm)
         else:
-            return self._hashlib_compute(algorithm)
+            result = self._hashlib_compute(algorithm)
+        self.checksums[algorithm] = result
+        return result
 
+    def get(self, algorithm: str) -> str:
+        """Same as `compute` but does not recalculate the checksum if it is already known."""
+        if algorithm in self.checksums:
+            return self.checksums[algorithm]
+        return self.compute(algorithm)
+
+    @property
     def blake2b(self) -> str:
-        """Compute a blake2b checksum."""
-        return self._hashlib_compute("blake2b")
+        """blake2b"""
+        return self.get("blake2b")
 
+    @property
     def blake2s(self) -> str:
-        """Compute a blake2s checksum."""
-        return self._hashlib_compute("blake2s")
+        """blake2s"""
+        return self.get("blake2s")
 
+    @property
     def md5(self) -> str:
-        """Compute an md5 checksum."""
-        return self._hashlib_compute("md5")
+        """md5"""
+        return self.get("md5")
 
+    @property
     def sha1(self) -> str:
-        """Compute a sha1 checksum."""
-        return self._hashlib_compute("sha1")
+        """sha1"""
+        return self.get("sha1")
 
+    @property
     def sha224(self) -> str:
-        """Compute a sha224 checksum."""
-        return self._hashlib_compute("sha224")
+        """sha224"""
+        return self.get("sha224")
 
+    @property
     def sha256(self) -> str:
-        """Compute a sha256 checksum."""
-        return self._hashlib_compute("sha256")
+        """sha256"""
+        return self.get("sha256")
 
+    @property
     def sha384(self) -> str:
-        """Compute a sha384 checksum."""
-        return self._hashlib_compute("sha384")
+        """sha384"""
+        return self.get("sha384")
 
+    @property
     def sha512(self) -> str:
-        """Compute a sha512 checksum."""
-        return self._hashlib_compute("sha512")
+        """sha512"""
+        return self.get("sha512")
 
+    @property
     def adler32(self) -> str:
-        """Compute an adler32 checksum."""
-        return self._zlib_compute("adler32")
+        """adler32"""
+        return self.get("adler32")
 
+    @property
     def crc32(self) -> str:
-        """Compute a crc32 checksum."""
-        return self._zlib_compute("crc32")
+        """crc32"""
+        return self.get("crc32")

@@ -17,7 +17,7 @@ def _algorithm_mode(algorithm: str, file: str, given: str) -> None:
     computed = 0
     for filename in iglob(file, recursive=True):
         if isfile(filename):
-            actual = Checksum(filename).compute(algorithm)
+            actual = Checksum(filename).get(algorithm)
             if given:
                 output = Checksum.print(algorithm, filename, given)
                 output += f" {click.style('OK', fg='green') if _is_match(actual, given) else click.style(f'ACTUAL: {actual}', fg='red')}"
@@ -33,7 +33,7 @@ def _check_mode(file: str) -> None:
         for algorithm, filename, given in Checksum.parse(file):
             output = Checksum.print(algorithm, filename, given)
             try:
-                actual = Checksum(filename).compute(algorithm)
+                actual = Checksum(filename).get(algorithm)
             except FileNotFoundError:
                 output += f" {click.style('SKIP: File not found', fg='yellow')}"
             except OSError:
@@ -46,7 +46,7 @@ def _check_mode(file: str) -> None:
 
 @click.version_option(version="0.1.0")
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
-@click.option("-a", "--algorithm", type=click.Choice(Checksum.supported.split(" ")))
+@click.option("-a", "--algorithm", type=click.Choice(Checksum.supported))
 @click.option("-c", "--check", is_flag=True, help="Read checksums from `FILE` and check them.")
 @click.option("-g", "--given", help="See if the given checksum `TEXT` matches the computed checksum. (use with -a)")
 @click.argument("file")

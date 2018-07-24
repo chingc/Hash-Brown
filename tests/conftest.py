@@ -25,43 +25,43 @@ def supported() -> str:
 
 @pytest.fixture  # type: ignore
 def blake2b() -> str:
-    return Checksum(_FOX).blake2b()  # type: ignore
+    return Checksum(_FOX).blake2b  # type: ignore
 
 @pytest.fixture  # type: ignore
 def blake2s() -> str:
-    return Checksum(_FOX).blake2s()  # type: ignore
+    return Checksum(_FOX).blake2s  # type: ignore
 
 @pytest.fixture  # type: ignore
 def md5() -> str:
-    return Checksum(_FOX).md5()  # type: ignore
+    return Checksum(_FOX).md5  # type: ignore
 
 @pytest.fixture  # type: ignore
 def sha1() -> str:
-    return Checksum(_FOX).sha1()  # type: ignore
+    return Checksum(_FOX).sha1  # type: ignore
 
 @pytest.fixture  # type: ignore
 def sha224() -> str:
-    return Checksum(_FOX).sha224()  # type: ignore
+    return Checksum(_FOX).sha224  # type: ignore
 
 @pytest.fixture  # type: ignore
 def sha256() -> str:
-    return Checksum(_FOX).sha256()  # type: ignore
+    return Checksum(_FOX).sha256  # type: ignore
 
 @pytest.fixture  # type: ignore
 def sha384() -> str:
-    return Checksum(_FOX).sha384()  # type: ignore
+    return Checksum(_FOX).sha384  # type: ignore
 
 @pytest.fixture  # type: ignore
 def sha512() -> str:
-    return Checksum(_FOX).sha512()  # type: ignore
+    return Checksum(_FOX).sha512  # type: ignore
 
 @pytest.fixture  # type: ignore
 def adler32() -> str:
-    return Checksum(_FOX).adler32()  # type: ignore
+    return Checksum(_FOX).adler32  # type: ignore
 
 @pytest.fixture  # type: ignore
 def crc32() -> str:
-    return Checksum(_FOX).crc32()  # type: ignore
+    return Checksum(_FOX).crc32  # type: ignore
 
 @pytest.fixture  # type: ignore
 def checksum_obj() -> Checksum:
