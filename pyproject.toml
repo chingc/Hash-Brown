@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "hb"
-version = "1.1.1"
-description = "A simple command-line file hashing utility."
+version = "1.1.2"
+description = "A simple command-line utility for calculating checksums."
 license = "MIT"
 authors = ["Ching Chow <ching.chow.sc@gmail.com>"]
 readme = "README.md"
