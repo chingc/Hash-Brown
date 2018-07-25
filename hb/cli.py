@@ -5,7 +5,7 @@ from os.path import isfile
 
 import click
 
-from main import Checksum
+from hb.main import Checksum
 
 
 def _is_match(checksum1: str, checksum2: str) -> bool:
@@ -44,7 +44,7 @@ def _check_mode(file: str) -> None:
     except (OSError, ValueError) as error:
         click.echo(error)  # type: ignore
 
-@click.version_option(version="1.1.0")
+@click.version_option(version="1.1.1")
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option("-a", "--algorithm", type=click.Choice(Checksum.supported))
 @click.option("-c", "--check", is_flag=True, help="Read checksums from a file.")
