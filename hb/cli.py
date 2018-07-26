@@ -13,9 +13,9 @@ def _is_match(checksum1: str, checksum2: str) -> bool:
         return True
     return False
 
-def _algorithm_mode(algorithm: str, file: str, given: str) -> None:
+def _algorithm_mode(algorithm: str, path: str, given: str) -> None:
     computed = 0
-    for filename in iglob(file, recursive=True):
+    for filename in iglob(path, recursive=True):
         if isfile(filename):
             actual = Checksum(filename).get(algorithm)
             if given:
@@ -26,23 +26,23 @@ def _algorithm_mode(algorithm: str, file: str, given: str) -> None:
             click.echo(output)
             computed += 1
     if not computed:
-        click.echo(f"No files matched the pattern: '{file}'")
+        click.echo(f"No files matched the pattern: '{path}'")
 
-def _check_mode(file: str) -> None:
+def _check_mode(path: str) -> None:
     try:
-        for algorithm, filename, given in Checksum.parse(file):
+        for algorithm, filename, given in Checksum.parse(path):
             output = Checksum.print(algorithm, filename, given)
             try:
                 actual = Checksum(filename).get(algorithm)
             except FileNotFoundError:
                 output += f" {click.style('SKIP: File not found', fg='yellow')}"
             except OSError:
-                output += f" {click.style('SKIP: Unable to read', fg='yellow')}"
+                output += f" {click.style('SKIP: Unable to read file', fg='yellow')}"
             else:
                 output += f" {click.style('OK', fg='green') if _is_match(actual, given) else click.style(f'ACTUAL: {actual}', fg='red')}"
             click.echo(output)
     except (OSError, ValueError) as error:
-        click.echo(error)  # type: ignore
+        click.echo(f"Unable to read checksum file: {error}")
 
 @click.version_option(version=Checksum.version())
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})

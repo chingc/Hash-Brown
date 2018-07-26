@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Thread
 from time import sleep
-from typing import Dict, IO, List, Sequence, Tuple
+from typing import Dict, IO, List, Tuple
 
 
 @dataclass
@@ -18,7 +18,7 @@ class Checksum():
     """
     path: str
     checksums: Dict[str, str] = field(default_factory=dict, init=False)
-    supported: Tuple = field(default=("blake2b", "blake2s", "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "adler32", "crc32"), repr=False, init=False)
+    supported: Tuple[str, ...] = field(default=("blake2b", "blake2s", "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "adler32", "crc32"), repr=False, init=False)
     threshold: int = field(default=200, repr=False)
 
     @staticmethod
@@ -31,10 +31,10 @@ class Checksum():
         raise LookupError(f"Cannot find version info: '{path}'")
 
     @staticmethod
-    def parse(file: str) -> List[Sequence[str]]:
+    def parse(path: str) -> List[Tuple[str, ...]]:
         """Parse lines from a checksum file."""
         parsed_lines = []
-        with open(file, "r") as lines:
+        with open(path, "r") as lines:
             for line in lines:
                 line = line.strip()
                 if not line or line[0] == "#":  # skip blank lines and comments
@@ -42,13 +42,13 @@ class Checksum():
                 match = re.match(r"(\w+)\s?\((.+)\)\s?=\s?(\w+)", line)
                 if not match:
                     raise ValueError(f"Bad line in checksum file: '{line}'")
-                parsed_lines.append(match.group(1, 2, 3))
+                parsed_lines.append(tuple(match.group(1, 2, 3)))
         return parsed_lines
 
     @staticmethod
-    def print(algorithm: str, file: str, checksum: str) -> str:
+    def print(algorithm: str, path: str, checksum: str) -> str:
         """BSD style checksum output."""
-        return f"{algorithm} ({file}) = {checksum}"
+        return f"{algorithm} ({path}) = {checksum}"
 
     def _progress(self, file: IO) -> None:
         def _p(file: IO, fsize: int) -> None:
@@ -61,9 +61,9 @@ class Checksum():
 
     def _hashlib_compute(self, name: str) -> str:
         result = hashlib.new(name)
-        with open(self.path, "rb") as file:
-            self._progress(file)
-            for line in file:
+        with open(self.path, "rb") as lines:
+            self._progress(lines)
+            for line in lines:
                 result.update(line)
         return result.hexdigest()
 
@@ -74,9 +74,9 @@ class Checksum():
         elif name == "crc32":
             result = 0
             update = zlib.crc32
-        with open(self.path, "rb") as file:
-            self._progress(file)
-            for line in file:
+        with open(self.path, "rb") as lines:
+            self._progress(lines)
+            for line in lines:
                 result = update(line, result)
         return hex(result)[2:].zfill(8)
 

@@ -28,7 +28,7 @@ def test_print() -> None:
     assert Checksum.print("a", "b", "c") == "a (b) = c"
 
 def test_supported(supported: str) -> None:
-    assert " ".join(supported) == "blake2b blake2s md5 sha1 sha224 sha256 sha384 sha512 adler32 crc32"
+    assert supported == "blake2b blake2s md5 sha1 sha224 sha256 sha384 sha512 adler32 crc32"
 
 def test_unsupported() -> None:
     with pytest.raises(ValueError):
