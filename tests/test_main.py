@@ -7,6 +7,12 @@ import pytest
 from hb.main import Checksum
 
 
+def test_version() -> None:
+    assert Checksum.version() == "1.1.2"
+
+    with pytest.raises(LookupError):
+        Checksum.version("LICENSE")
+
 def test_parse(good_checklists: List[str], bad_checklists: List[str]) -> None:
     for checklist in good_checklists:
         for algorithm, path, checksum in Checksum.parse(checklist):

@@ -4,6 +4,7 @@ import hashlib
 import re
 import zlib
 from dataclasses import dataclass, field
+from pathlib import Path
 from threading import Thread
 from time import sleep
 from typing import Dict, IO, List, Sequence, Tuple
@@ -19,6 +20,15 @@ class Checksum():
     checksums: Dict[str, str] = field(default_factory=dict, init=False)
     supported: Tuple = field(default=("blake2b", "blake2s", "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "adler32", "crc32"), repr=False, init=False)
     threshold: int = field(default=200, repr=False)
+
+    @staticmethod
+    def version(path: str = "pyproject.toml") -> str:
+        """Get version info."""
+        with open(Path(__file__).parent.parent / path, "r") as lines:
+            for line in lines:
+                if line.startswith("version = "):
+                    return line.strip().split(" = ")[1][1:-1]
+        raise LookupError(f"Cannot find version info: '{path}'")
 
     @staticmethod
     def parse(file: str) -> List[Sequence[str]]:
