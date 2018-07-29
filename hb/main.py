@@ -3,32 +3,18 @@
 import hashlib
 import re
 import zlib
-from dataclasses import dataclass, field
-from pathlib import Path
 from threading import Thread
 from time import sleep
 from typing import Dict, IO, List, Tuple
 
 
-@dataclass
 class Checksum():
     """Compute various checksums.
 
     Digest, hash, and checksum are all referred to as checksum for simplicity.
     """
-    path: str
-    checksums: Dict[str, str] = field(default_factory=dict, init=False)
-    supported: Tuple[str, ...] = field(default=("blake2b", "blake2s", "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "adler32", "crc32"), repr=False, init=False)
-    threshold: int = field(default=200, repr=False)
-
-    @staticmethod
-    def version(path: str = "pyproject.toml") -> str:
-        """Get version info."""
-        with open(Path(__file__).parent.parent / path, "r") as lines:
-            for line in lines:
-                if line.startswith("version = "):
-                    return line.strip().split(" = ")[1][1:-1]
-        raise LookupError(f"Cannot find version info: '{path}'")
+    SUPPORTED = ("blake2b", "blake2s", "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "adler32", "crc32")
+    VERSION = "1.2.0"
 
     @staticmethod
     def parse(path: str) -> List[Tuple[str, ...]]:
@@ -49,6 +35,11 @@ class Checksum():
     def print(algorithm: str, path: str, checksum: str) -> str:
         """BSD style checksum output."""
         return f"{algorithm} ({path}) = {checksum}"
+
+    def __init__(self, path: str, threshold: int = 200) -> None:
+        self.checksums: Dict[str, str] = {}
+        self.path = path
+        self.threshold = threshold
 
     def _progress(self, file: IO) -> None:
         def _p(file: IO, fsize: int) -> None:
@@ -82,7 +73,7 @@ class Checksum():
 
     def compute(self, algorithm: str) -> str:
         """Compute a checksum."""
-        if algorithm not in self.supported:
+        if algorithm not in Checksum.SUPPORTED:
             raise ValueError(f"Unsupported algorithm: '{algorithm}'")
         elif algorithm in ["adler32", "crc32"]:
             result = self._zlib_compute(algorithm)

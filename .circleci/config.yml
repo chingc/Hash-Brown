@@ -39,14 +39,10 @@ jobs:
           # C0111: missing-docstring
           # C0301: line-too-long
           # C0321: multiple-statements
-          # C0411: wrong-import-order
           # E1120: no-value-for-parameter
-          # E1135: unsupported-membership-test
-          # E1136: unsubscriptable-object
-          # E1137: unsupported-assignment-operation
           command: |
             source .venv/bin/activate
-            poetry run pylint -d C0301,C0411,E1120,E1135,E1136,E1137 hb
+            poetry run pylint -d C0301,E1120 hb
             poetry run pylint -d C0111,C0301,C0321 tests
           when: always
 

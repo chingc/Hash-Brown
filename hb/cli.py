@@ -44,9 +44,9 @@ def _check_mode(path: str) -> None:
     except (OSError, ValueError) as error:
         click.echo(f"Unable to read checksum file: {error}")
 
-@click.version_option(version=Checksum.version())
+@click.version_option(version=Checksum.VERSION)
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
-@click.option("-a", "--algorithm", type=click.Choice(Checksum.supported))
+@click.option("-a", "--algorithm", type=click.Choice(Checksum.SUPPORTED))
 @click.option("-c", "--check", is_flag=True, help="Read checksums from a file.")
 @click.option("-g", "--given", help="See if the given checksum `TEXT` matches the computed checksum. (use with -a)")
 @click.argument("file")

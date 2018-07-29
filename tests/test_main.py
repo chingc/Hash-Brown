@@ -7,11 +7,15 @@ import pytest
 from hb.main import Checksum
 
 
-def test_version() -> None:
-    assert Checksum.version() == "1.1.2"
+def test_supported(supported: str) -> None:
+    assert list(Checksum.SUPPORTED) == supported
 
-    with pytest.raises(LookupError):
-        Checksum.version("LICENSE")
+def test_unsupported() -> None:
+    with pytest.raises(ValueError):
+        Checksum(".").compute("unsupported")
+
+def test_version(version: str) -> None:
+    assert Checksum.VERSION == version
 
 def test_parse(good_checklists: List[str], bad_checklists: List[str]) -> None:
     for checklist in good_checklists:
@@ -26,13 +30,6 @@ def test_parse(good_checklists: List[str], bad_checklists: List[str]) -> None:
 
 def test_print() -> None:
     assert Checksum.print("a", "b", "c") == "a (b) = c"
-
-def test_supported(supported: str) -> None:
-    assert supported == "blake2b blake2s md5 sha1 sha224 sha256 sha384 sha512 adler32 crc32"
-
-def test_unsupported() -> None:
-    with pytest.raises(ValueError):
-        Checksum(".").compute("unsupported")
 
 def test_blake2b(blake2b: str) -> None:
     assert blake2b == "20a9ed5b422c04cf7328b36c0d4ad235408d034bee5a15d77a4185c1bf2c30202d340c212e872d1074f3556f428357e2503b749f3e198b59a74313ad2975a951"

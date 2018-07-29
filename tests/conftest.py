@@ -1,5 +1,6 @@
 """Fixtures"""
 
+from hashlib import algorithms_guaranteed
 from pathlib import Path
 from typing import List
 
@@ -8,21 +9,30 @@ import pytest
 from hb.main import Checksum
 
 
-_TEST_FILES = Path(__file__).parent / "test_files"
-_FOX = str(_TEST_FILES / "fox.txt")
+_HERE = Path(__file__).parent
+_FOX = str(_HERE / "test_files" / "fox.txt")
 
+
+@pytest.fixture  # type: ignore
+def supported() -> List[str]:
+    return [x for x in sorted(algorithms_guaranteed) if "_" not in x] + ["adler32", "crc32"]
+
+@pytest.fixture  # type: ignore
+def version() -> str:
+    ver = "Cannot find version!"
+    with open(_HERE.parent / "pyproject.toml", "r") as lines:
+        for line in lines:
+            if line.startswith("version = "):
+                ver = line.strip().split(" = ")[1][1:-1]
+    return ver
 
 @pytest.fixture  # type: ignore
 def good_checklists() -> List[str]:
-    return [str(_TEST_FILES / "checklist_good.txt")]
+    return [str(_HERE / "test_files" / "checklist_good.txt")]
 
 @pytest.fixture  # type: ignore
 def bad_checklists() -> List[str]:
-    return [str(_TEST_FILES / f"checklist_bad_0{i}.txt") for i in range(1, 4)]
-
-@pytest.fixture  # type: ignore
-def supported() -> str:
-    return " ".join(Checksum.supported)
+    return [str(_HERE / "test_files" / f"checklist_bad_0{i}.txt") for i in range(1, 4)]
 
 @pytest.fixture  # type: ignore
 def blake2b() -> str:
