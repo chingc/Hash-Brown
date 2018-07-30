@@ -2,6 +2,7 @@
 
 from glob import iglob
 from os.path import isfile
+from time import time
 
 import click
 
@@ -54,15 +55,20 @@ def _check_mode(path: str) -> None:
 @click.option("-a", "--algorithm", type=click.Choice(Checksum.SUPPORTED))
 @click.option("-c", "--check", is_flag=True, help="Read checksums from a file.")
 @click.option("-g", "--given", help="See if the given checksum `TEXT` matches the computed checksum. (use with -a)")
+@click.option("-t", "--timer", is_flag=True, help="Display elapsed time.")
 @click.argument("file")
-def cli(algorithm: str, check: bool, given: str, file: str) -> None:
+def cli(algorithm: str, check: bool, given: str, file: str, timer: bool) -> None:
     """Hash Brown: Compute and verify checksums."""
+    start_time = time()
     if algorithm:
         _algorithm_mode(algorithm, file, given)
     elif check:
         _check_mode(file)
     else:
         pass
+    if timer:
+        click.echo(f"# {time() - start_time:.3f}s")
+
 
 if __name__ == "__main__":
     cli()
