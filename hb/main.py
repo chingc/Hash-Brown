@@ -25,7 +25,7 @@ class Checksum():
                 line = line.strip()
                 if not line or line[0] == "#":  # skip blank lines and comments
                     continue
-                match = re.match(r"(\w+)\s?\((.+)\)\s?=\s?(\w+)", line)
+                match = re.match(r"(\w+) \((.+)\) = (\w+)", line)
                 if not match:
                     raise ValueError(f"Bad line in checksum file: '{line}'")
                 parsed_lines.append(tuple(match.group(1, 2, 3)))
