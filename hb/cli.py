@@ -1,7 +1,7 @@
 """Hash Brown CLI"""
 
 from glob import iglob
-from os.path import isfile
+from pathlib import Path
 from time import time
 
 import click
@@ -17,7 +17,7 @@ def _is_match(checksum1: str, checksum2: str) -> bool:
 def _algorithm_mode(algorithm: str, path: str, given: str) -> None:
     computed = 0
     for filename in iglob(path, recursive=True):
-        if isfile(filename):
+        if Path(filename).is_file():
             try:
                 actual = Checksum(filename).get(algorithm)
             except OSError as error:

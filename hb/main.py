@@ -3,6 +3,7 @@
 import hashlib
 import re
 import zlib
+from pathlib import Path
 from threading import Thread
 from time import sleep
 from typing import Dict, IO, List, Tuple
@@ -20,7 +21,7 @@ class Checksum():
     def parse(path: str) -> List[Tuple[str, ...]]:
         """Parse lines from a checksum file."""
         parsed_lines = []
-        with open(path, "r") as lines:
+        with Path(path).open("r") as lines:
             for line in lines:
                 line = line.strip()
                 if not line or line[0] == "#":  # skip blank lines and comments
@@ -34,25 +35,25 @@ class Checksum():
     @staticmethod
     def print(algorithm: str, path: str, checksum: str) -> str:
         """BSD style checksum output."""
-        return f"{algorithm} ({path}) = {checksum}"
+        return f"{algorithm} ({Path(path)}) = {checksum}"
 
     def __init__(self, path: str, threshold: int = 200) -> None:
-        self._path = path
+        self._path = Path(path)
         self.checksums: Dict[str, str] = {}
+        self.filesize = self._path.stat().st_size
         self.threshold = threshold
 
     def _progress(self, file: IO) -> None:
-        def _p(file: IO, fsize: int) -> None:
+        def _p(file: IO) -> None:
             while not file.closed:
-                print(f"{round(file.tell() / fsize * 100)}%", end="\r")
+                print(f"{int(file.tell() / self.filesize * 100)}%", end="\r")
                 sleep(0.2)
-        fsize, _ = file.seek(0, 2), file.seek(0)
-        if fsize > self.threshold * 1024 * 1024:
-            Thread(target=_p, args=(file, fsize)).start()
+        if self.filesize > self.threshold * 1024 * 1024:
+            Thread(target=_p, args=(file,)).start()
 
     def _hashlib_compute(self, name: str) -> str:
         result = hashlib.new(name)
-        with open(self.path, "rb") as lines:
+        with self._path.open("rb") as lines:
             self._progress(lines)
             for line in lines:
                 result.update(line)
@@ -65,7 +66,7 @@ class Checksum():
         elif name == "crc32":
             result = 0
             update = zlib.crc32
-        with open(self.path, "rb") as lines:
+        with self._path.open("rb") as lines:
             self._progress(lines)
             for line in lines:
                 result = update(line, result)
@@ -91,12 +92,12 @@ class Checksum():
     @property
     def path(self) -> str:
         """The path to calculate."""
-        return self._path
+        return str(self._path)
 
     @path.setter
     def path(self, path: str) -> None:
         """Set new path and clear the checksums dictionary."""
-        self._path = path
+        self._path = Path(path)
         self.checksums = {}
 
     @property
