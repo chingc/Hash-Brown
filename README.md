@@ -54,6 +54,7 @@ Dotfiles are not included when globbing and need to be specified explicitly.
 -c, --check                     Read checksums from a file.
 -g, --given TEXT                See if the given checksum `TEXT` matches the
                                 computed checksum. (use with -a)
+-t, --timer                     Display elapsed time.
 --version                       Show the version and exit.
 -h, --help                      Show this message and exit.
 ```
