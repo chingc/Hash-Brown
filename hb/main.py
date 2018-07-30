@@ -37,8 +37,8 @@ class Checksum():
         return f"{algorithm} ({path}) = {checksum}"
 
     def __init__(self, path: str, threshold: int = 200) -> None:
+        self._path = path
         self.checksums: Dict[str, str] = {}
-        self.path = path
         self.threshold = threshold
 
     def _progress(self, file: IO) -> None:
@@ -87,6 +87,17 @@ class Checksum():
         if algorithm in self.checksums:
             return self.checksums[algorithm]
         return self.compute(algorithm)
+
+    @property
+    def path(self) -> str:
+        """The path to calculate."""
+        return self._path
+
+    @path.setter
+    def path(self, path: str) -> None:
+        """Set new path and clear the checksums dictionary."""
+        self._path = path
+        self.checksums = {}
 
     @property
     def blake2b(self) -> str:

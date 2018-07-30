@@ -31,6 +31,15 @@ def test_parse(good_checklists: List[str], bad_checklists: List[str]) -> None:
 def test_print() -> None:
     assert Checksum.print("a", "b", "c") == "a (b) = c"
 
+def test_path(checksum_obj: Checksum) -> None:
+    checksum_obj.get("md5")
+    assert checksum_obj.path != "abc"
+    assert checksum_obj.checksums
+
+    checksum_obj.path = "abc"
+    assert checksum_obj.path == "abc"
+    assert not checksum_obj.checksums
+
 def test_blake2b(blake2b: str) -> None:
     assert blake2b == "20a9ed5b422c04cf7328b36c0d4ad235408d034bee5a15d77a4185c1bf2c30202d340c212e872d1074f3556f428357e2503b749f3e198b59a74313ad2975a951"
 
