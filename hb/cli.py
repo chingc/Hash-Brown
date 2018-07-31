@@ -3,70 +3,72 @@
 from glob import iglob
 from pathlib import Path
 from time import time
+from typing import Tuple
 
 import click
 
-from hb.main import Checksum
+from main import Checksum
 
 
-def _is_match(checksum1: str, checksum2: str) -> bool:
-    if checksum1.endswith(checksum2):
-        return True
-    return False
+def _shorten(error: Exception) -> str:
+    return str(error).partition("] ")[-1]
+
+def _compute(algorithm: str, path: str, given: str) -> Tuple[int, str]:
+    try:
+        actual = Checksum(path).get(algorithm)
+    except OSError as error:
+        return (2, f"{click.style(_shorten(error), fg='yellow')}")
+    else:
+        if given:
+            if actual == given:
+                return (0, f"{Checksum.print(algorithm, path, given)} {click.style('OK', fg='green')}")
+            return (1, f"{Checksum.print(algorithm, path, given)} {click.style(f'ACTUAL: {actual}', fg='red')}")
+        return (0, Checksum.print(algorithm, path, actual))
 
 def _algorithm_mode(algorithm: str, path: str, given: str) -> None:
     computed = 0
     for filename in iglob(path, recursive=True):
-        if Path(filename).is_file():
-            try:
-                actual = Checksum(filename).get(algorithm)
-            except OSError as error:
-                msg = str(error).partition("] ")[-1]
-                output = f"{click.style(msg, fg='yellow')}"
-            else:
-                if given:
-                    output = Checksum.print(algorithm, filename, given)
-                    output += f" {click.style('OK', fg='green') if _is_match(actual, given) else click.style(f'ACTUAL: {actual}', fg='red')}"
-                else:
-                    output = Checksum.print(algorithm, filename, actual)
-            click.echo(output)
-            computed += 1
+        if not Path(filename).is_file():
+            continue
+        click.echo(_compute(algorithm, filename, given)[1])
+        computed += 1
     if not computed:
         click.echo(f"No files matched the pattern: '{path}'")
 
 def _check_mode(path: str) -> None:
-    try:
-        for algorithm, filename, given in Checksum.parse(path):
-            output = Checksum.print(algorithm, filename, given)
-            try:
-                actual = Checksum(filename).get(algorithm)
-            except OSError as error:
-                msg = str(error).partition("] ")[-1]
-                output += f" {click.style(msg, fg='yellow')}"
-            else:
-                result, color = ("OK", "green") if _is_match(actual, given) else (f"ACTUAL: {actual}", "red")
-                output += f" {click.style(result, fg=color)}"
-            click.echo(output)
-    except (OSError, ValueError) as error:
-        click.echo(f"Unable to read checksum file: {error}")
+    codes = {k: 0 for k in [0, 1, 2]}
+    for algorithm, filename, given in Checksum.parse(path):
+        code, result = _compute(algorithm, filename, given)
+        codes[code] += 1
+        if code:
+            click.echo(result)
+    click.secho(f"OK: {codes[0]}", fg="green")
+    if codes[1]:
+        click.secho(f"BAD: {codes[1]}", fg="red")
+    if codes[2]:
+        click.secho(f"SKIP: {codes[2]}", fg="yellow")
+
 
 @click.version_option(version=Checksum.VERSION)
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option("-a", "--algorithm", type=click.Choice(Checksum.SUPPORTED))
 @click.option("-c", "--check", is_flag=True, help="Read checksums from a file.")
 @click.option("-g", "--given", help="See if the given checksum `TEXT` matches the computed checksum. (use with -a)")
-@click.option("-t", "--timer", is_flag=True, help="Display elapsed time.")
+@click.option("-t", "--timer", is_flag=True, help="Display elapsed time in seconds.")
 @click.argument("file")
-def cli(algorithm: str, check: bool, given: str, file: str, timer: bool) -> None:
+def cli(**kwargs: str) -> None:
     """Hash Brown: Compute and verify checksums."""
     start_time = time()
-    if algorithm:
-        _algorithm_mode(algorithm, file, given)
-    elif check:
-        _check_mode(file)
-    else:
-        pass
-    if timer:
+    try:
+        if kwargs["algorithm"]:
+            _algorithm_mode(kwargs["algorithm"], kwargs["file"], kwargs["given"])
+        elif kwargs["check"]:
+            _check_mode(kwargs["file"])
+        else:
+            pass
+    except (OSError, ValueError) as error:
+        click.echo(_shorten(error))
+    if kwargs["timer"]:
         click.echo(f"# {time() - start_time:.3f}s")
 
 
