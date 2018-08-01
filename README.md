@@ -55,6 +55,7 @@ Dotfiles are not included when globbing and need to be specified explicitly.
 -g, --given TEXT                See if the given checksum `TEXT` matches the
                                 computed checksum. (use with -a)
 -p, --parallel                  Process files in parallel.
+-q, --quiet                     Hide results that are OK. (use with -c)
 -t, --timer                     Display elapsed time in seconds.
 --version                       Show the version and exit.
 -h, --help                      Show this message and exit.

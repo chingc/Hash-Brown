@@ -26,7 +26,7 @@ def _compute(algorithm: str, path: str, given: str) -> Tuple[int, str]:
             return (1, f"{Checksum.print(algorithm, path, given)} {click.style(f'ACTUAL: {actual}', fg='red')}")
         return (0, Checksum.print(algorithm, path, actual))
 
-def _algorithm_mode(algorithm: str, path: str, given: str, parallel: str) -> None:
+def _algorithm_mode(algorithm: str, path: str, given: str, parallel: bool) -> None:
     computed = 0
     with ProcessPoolExecutor(max_workers=None if parallel else 1) as executor:
         for filename in iglob(path, recursive=True):
@@ -38,9 +38,11 @@ def _algorithm_mode(algorithm: str, path: str, given: str, parallel: str) -> Non
     if not computed:
         click.echo(f"No files matched the pattern: '{path}'")
 
-def _check_mode(path: str, parallel: str) -> None:
+def _check_mode(path: str, quiet: bool, parallel: bool) -> None:
     def _cb(code: int, result: str) -> None:
-        if code:
+        if not quiet:
+            click.echo(result)
+        elif code:
             click.echo(result)
     with ProcessPoolExecutor(max_workers=None if parallel else 1) as executor:
         for algorithm, filename, given in Checksum.parse(path):
@@ -54,16 +56,17 @@ def _check_mode(path: str, parallel: str) -> None:
 @click.option("-c", "--check", is_flag=True, help="Read checksums from a file.")
 @click.option("-g", "--given", help="See if the given checksum `TEXT` matches the computed checksum. (use with -a)")
 @click.option("-p", "--parallel", is_flag=True, default=False, help="Process files in parallel.")
+@click.option("-q", "--quiet", is_flag=True, default=False, help="Hide results that are OK. (use with -c)")
 @click.option("-t", "--timer", is_flag=True, help="Display elapsed time in seconds.")
-@click.argument("file")
-def cli(**kwargs: str) -> None:
+@click.argument("path")
+def cli(**kwargs) -> None:  # type: ignore
     """Hash Brown: Compute and verify checksums."""
     start_time = time()
     try:
         if kwargs["algorithm"]:
-            _algorithm_mode(kwargs["algorithm"], kwargs["file"], kwargs["given"], kwargs["parallel"])
+            _algorithm_mode(**{k: v for k, v in kwargs.items() if k in ["algorithm", "path", "given", "parallel"]})
         elif kwargs["check"]:
-            _check_mode(kwargs["file"], kwargs["parallel"])
+            _check_mode(**{k: v for k, v in kwargs.items() if k in ["path", "quiet", "parallel"]})
         else:
             pass
     except (OSError, ValueError) as error:
