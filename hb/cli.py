@@ -12,7 +12,8 @@ from hb.main import Checksum
 
 
 def _shorten(error: Exception) -> str:
-    return str(error).partition("] ")[-1]
+    msg = str(error)
+    return msg.partition("] ")[-1] if "] " in msg else msg
 
 def _compute(algorithm: str, path: str, given: str) -> Tuple[int, str]:
     try:
