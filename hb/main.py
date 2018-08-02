@@ -4,6 +4,7 @@ import hashlib
 import re
 import zlib
 from pathlib import Path
+from sys import stderr
 from threading import Thread
 from time import sleep
 from typing import Dict, IO, List, Tuple
@@ -15,7 +16,7 @@ class Checksum():
     Digest, hash, and checksum are all referred to as checksum for simplicity.
     """
     SUPPORTED = ("blake2b", "blake2s", "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "adler32", "crc32")
-    VERSION = "1.4.0"
+    VERSION = "1.4.1"
 
     @staticmethod
     def parse(path: str) -> List[Tuple[str, ...]]:
@@ -46,8 +47,9 @@ class Checksum():
     def _progress(self, file: IO) -> None:
         def _p(file: IO) -> None:
             while not file.closed:
-                print(f"{int(file.tell() / self.filesize * 100)}%", end="\r")
+                print(f"{int(file.tell() / self.filesize * 100)}%", end="\r", file=stderr)
                 sleep(0.2)
+            print("    ", end="\r", file=stderr)  # clear the progress display
         if self.filesize > self.threshold * 1024 * 1024:
             Thread(target=_p, args=(file,)).start()
 
