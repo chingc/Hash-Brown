@@ -39,9 +39,10 @@ jobs:
           # C0111: missing-docstring
           # C0301: line-too-long
           # C0321: multiple-statements
+          # E1120: no-value-for-parameter
           command: |
             source .venv/bin/activate
-            poetry run pylint -d C0301 hb
+            poetry run pylint -d C0301,E1120 hb
             poetry run pylint -d C0111,C0301,C0321 tests
           when: always
 
