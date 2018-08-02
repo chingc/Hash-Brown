@@ -60,7 +60,7 @@ def _check_mode(path: str, quiet: bool, parallel: bool) -> None:
 @click.option("-q", "--quiet", is_flag=True, default=False, help="Hide results that are OK. (use with -c)")
 @click.option("-t", "--timer", is_flag=True, help="Display elapsed time in seconds.")
 @click.argument("path")
-def cli(**kwargs) -> None:  # type: ignore
+def cli(**kwargs) -> None:
     """Hash Brown: Compute and verify checksums."""
     start_time = time()
     try:
