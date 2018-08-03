@@ -281,9 +281,9 @@ python-versions = "*"
 version = "1.10.11"
 
 [metadata]
-content-hash = "65e2d16dbb73bcba9535a3d6c2bf477ec1103238bfc215cc1762c439443836db"
+content-hash = "e738acf41bebe08a31807710b97f0c66b24d24acb8bf4b10337d41c28ac11ee3"
 platform = "*"
-python-versions = "^3.7"
+python-versions = "^3.6"
 
 [metadata.hashes]
 astroid = ["a48b57ede295c3188ef5c84273bc2a8eadc46e4cbb001eae0d49fb5d1fabbb19", "d066cdeec5faeb51a4be5010da612680653d844b57afd86a5c8315f2f801b4cc"]

@@ -1,15 +1,15 @@
 version: 2
 
 jobs:
-  cache:
-    docker: &py37
+  python37:
+    docker:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - restore_cache: &cache_key
-          key: pip-cache-v1-{{ .Branch }}-{{ checksum "pyproject.lock" }}
-      - run:
-          name: Install dependencies
+      - restore_cache: &key37
+          key: pip37-cache-v1-{{ .Branch }}-{{ checksum "pyproject.lock" }}
+      - run: &dependencies
+          name: Dependencies
           command: |
             python -m venv .venv
             source .venv/bin/activate
@@ -17,16 +17,9 @@ jobs:
             poetry config settings.virtualenvs.in-project true
             poetry install
       - save_cache:
-          <<: *cache_key
+          <<: *key37
           paths:
             - .venv
-
-  lint:
-    docker: *py37
-    steps:
-      - checkout
-      - restore_cache:
-          <<: *cache_key
       - run:
           name: Mypy
           command: |
@@ -44,18 +37,12 @@ jobs:
             poetry run pylint -d C0301 hb
             poetry run pylint -d C0111,C0301,C0321 tests
           when: always
-
-  test:
-    docker: *py37
-    steps:
-      - checkout
-      - restore_cache:
-          <<: *cache_key
-      - run:
+      - run: &test
           name: Test
           command: |
             source .venv/bin/activate
             poetry run coverage run -m pytest --junit-xml=test-results/pytest/results.xml
+          when: always
       - run:
           name: Codecov
           command: |
@@ -67,23 +54,34 @@ jobs:
           path: test-results
           destination: test-results
 
+  python36:
+    docker:
+      - image: circleci/python:3.6.6
+    steps:
+      - checkout
+      - restore_cache: &key36
+          key: pip36-cache-v1-{{ .Branch }}-{{ checksum "pyproject.lock" }}
+      - run:
+          <<: *dependencies
+      - save_cache:
+          <<: *key36
+          paths:
+            - .venv
+      - run:
+          <<: *test
+
 workflows:
   version: 2
 
   commit:
     jobs:
-      - cache
-      - test:
-          requires:
-            - cache
-      - lint:
-          requires:
-            - cache
+      - python37
+      - python36
 
   weekly:
     jobs:
-      - lint
-      - test
+      - python37
+      - python36
     triggers:
       - schedule:
           cron: "1 0 * * 1"

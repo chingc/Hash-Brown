@@ -20,6 +20,7 @@ classifiers = [
     "Operating System :: POSIX :: BSD",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.6",
     "Topic :: Security",
     "Topic :: System :: Archiving",
     "Topic :: Utilities"
@@ -29,7 +30,7 @@ classifiers = [
 hb = "hb.cli:cli"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.6"
 click = "^6.7"
 
 [tool.poetry.dev-dependencies]

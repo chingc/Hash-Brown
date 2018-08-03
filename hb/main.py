@@ -1,13 +1,13 @@
 """Hash Brown"""
 
-import hashlib
-import re
-import zlib
 from pathlib import Path
 from sys import stderr
 from threading import Thread
 from time import sleep
 from typing import Dict, IO, List, Optional, Tuple
+import hashlib
+import re
+import zlib
 
 
 class Checksum():
