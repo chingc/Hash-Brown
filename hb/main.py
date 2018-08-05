@@ -1,10 +1,11 @@
 """Hash Brown"""
 
+from contextlib import contextmanager
 from pathlib import Path
 from sys import stderr
 from threading import Thread
 from time import sleep
-from typing import Dict, IO, List, Optional, Tuple
+from typing import Dict, Generator, IO, List, Tuple
 import hashlib
 import re
 import zlib
@@ -44,26 +45,26 @@ class Checksum():
         self.filesize = self._path.stat().st_size
         self.threshold = threshold
 
-    def _progress(self, file: IO) -> Optional[Thread]:
+    @contextmanager
+    def _progress_open(self) -> Generator:
         def _p(file: IO) -> None:
             while not file.closed:
                 print(f"{int(file.tell() / self.filesize * 100)}%", end="\r", file=stderr)
                 sleep(0.2)
             print("    ", end="\r", file=stderr)  # clear the progress display
-        thread = None
-        if self.filesize > self.threshold * 1024 * 1024:
-            thread = Thread(target=_p, args=(file,))
-            thread.start()
-        return thread
+        with open(self._path, "rb") as lines:
+            thread = Thread(target=_p, args=(lines,))
+            if self.filesize > self.threshold * 1024 * 1024:
+                thread.start()
+            yield lines
+        if thread.is_alive():
+            thread.join()
 
     def _hashlib_compute(self, name: str) -> str:
         result = hashlib.new(name)
-        with self._path.open("rb") as lines:
-            thread = self._progress(lines)
+        with self._progress_open() as lines:
             for line in lines:
                 result.update(line)
-        if thread:
-            thread.join()
         return result.hexdigest()
 
     def _zlib_compute(self, name: str) -> str:
@@ -73,12 +74,9 @@ class Checksum():
         elif name == "crc32":
             result = 0
             update = zlib.crc32
-        with self._path.open("rb") as lines:
-            thread = self._progress(lines)
+        with self._progress_open() as lines:
             for line in lines:
                 result = update(line, result)
-        if thread:
-            thread.join()
         return hex(result)[2:].zfill(8)
 
     def compute(self, algorithm: str) -> str:
