@@ -26,6 +26,7 @@ jobs:
       python -m venv .venv
       source .venv/bin/activate
       python -m pip install --upgrade pip
+      pip list -o
       pip install poetry
       poetry config settings.virtualenvs.in-project true
       poetry install
@@ -41,6 +42,26 @@ jobs:
       testResultsFiles: '**/test-results.xml'
       testRunTitle: 'Python $(python.version)'
     condition: succeededOrFailed()
+
+  - script: |
+      source .venv/bin/activate
+      poetry run codecov
+    displayName: 'codecov'
+
+  - script: |
+      source .venv/bin/activate
+      poetry run mypy --ignore-missing-imports --strict hb
+      poetry run mypy --ignore-missing-imports --strict tests
+    displayName: 'mypy'
+
+  # C0111: missing-docstring
+  # C0301: line-too-long
+  # C0321: multiple-statements
+  - script: |
+      source .venv/bin/activate
+      poetry run pylint -d C0301 hb
+      poetry run pylint -d C0111,C0301,C0321 tests
+    displayName: 'pylint'
 
 # - job: 'Publish'
 #   dependsOn: 'Test'
