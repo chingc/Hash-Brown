@@ -33,7 +33,7 @@ jobs:
 
   - script: |
       source .venv/bin/activate
-      poetry run pytest tests --junitxml=junit/test-results.xml
+      poetry run pytest tests --junitxml=junit/test-results.xml --cov=hb
     displayName: 'pytest'
 
   - task: PublishTestResults@2
