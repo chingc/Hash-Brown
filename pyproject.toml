@@ -31,7 +31,7 @@ hb = "hb.cli:cli"
 
 [tool.poetry.dependencies]
 python = "^3.6"
-click = "^6.7"
+click = "^7.0"
 
 [tool.poetry.dev-dependencies]
 codecov = "^2.0"

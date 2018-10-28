@@ -97,6 +97,7 @@ workflows:
   version: 2
 
   commit:
+
     jobs:
       - test:
           name: python 3.7
@@ -107,6 +108,7 @@ workflows:
       - lint
 
   weekly:
+
     jobs:
       - test:
           name: python 3.7
