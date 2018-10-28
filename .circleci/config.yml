@@ -1,32 +1,87 @@
-version: 2
+version: 2.1
 
-jobs:
-  python37:
+executors:
+
+  python:
+
+    parameters:
+      tag:
+        description: circleci/python docker tag
+        type: string
+
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:<< parameters.tag >>
+
+commands:
+
+  dependencies:
+
     steps:
-      - checkout
-      - restore_cache: &key37
-          key: pip37-cache-v1-{{ .Branch }}-{{ checksum "pyproject.lock" }}
-      - run: &dependencies
-          name: Dependencies
+      - run:
+          name: Install Dependencies
           command: |
             python -m venv .venv
             source .venv/bin/activate
+            python -m pip install --upgrade pip setuptools
             pip install poetry
             poetry config settings.virtualenvs.in-project true
             poetry install
-      - save_cache:
-          <<: *key37
-          paths:
-            - .venv
+
+jobs:
+
+  test:
+
+    parameters:
+      tag:
+        description: circleci/python docker tag
+        type: string
+
+    executor:
+      name: python
+      tag: << parameters.tag >>
+
+    steps:
+      - checkout
+
+      - dependencies
+
+      - run:
+          name: Pytest
+          command: |
+            source .venv/bin/activate
+            poetry run coverage run -m pytest --junit-xml=test-results/pytest/results.xml
+
+      - run:
+          name: Codecov
+          command: |
+            source .venv/bin/activate
+            poetry run codecov
+
+      - store_test_results:
+          path: test-results
+
+      - store_artifacts:
+          path: test-results
+          destination: test-results
+
+  lint:
+
+    executor:
+      name: python
+      tag: 3.7.1
+
+    steps:
+      - checkout
+
+      - dependencies
+
       - run:
           name: Mypy
           command: |
             source .venv/bin/activate
             poetry run mypy --ignore-missing-imports --strict hb
             poetry run mypy --ignore-missing-imports --strict tests
-          when: always
+
       - run:
           name: Pylint
           # C0111: missing-docstring
@@ -36,52 +91,31 @@ jobs:
             source .venv/bin/activate
             poetry run pylint -d C0301 hb
             poetry run pylint -d C0111,C0301,C0321 tests
-          when: always
-      - run: &test
-          name: Test
-          command: |
-            source .venv/bin/activate
-            poetry run coverage run -m pytest --junit-xml=test-results/pytest/results.xml
-          when: always
-      - run:
-          name: Codecov
-          command: |
-            source .venv/bin/activate
-            poetry run codecov
-      - store_test_results:
-          path: test-results
-      - store_artifacts:
-          path: test-results
-          destination: test-results
-
-  python36:
-    docker:
-      - image: circleci/python:3.6.6
-    steps:
-      - checkout
-      - restore_cache: &key36
-          key: pip36-cache-v1-{{ .Branch }}-{{ checksum "pyproject.lock" }}
-      - run:
-          <<: *dependencies
-      - save_cache:
-          <<: *key36
-          paths:
-            - .venv
-      - run:
-          <<: *test
 
 workflows:
+
   version: 2
 
   commit:
     jobs:
-      - python37
-      - python36
+      - test:
+          name: python 3.7
+          tag: 3.7.1
+      - test:
+          name: python 3.6
+          tag: 3.6.7
+      - lint
 
   weekly:
     jobs:
-      - python37
-      - python36
+      - test:
+          name: python 3.7
+          tag: 3.7.1
+      - test:
+          name: python 3.6
+          tag: 3.6.7
+      - lint
+
     triggers:
       - schedule:
           cron: "1 0 * * 1"
