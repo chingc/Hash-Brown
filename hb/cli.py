@@ -24,7 +24,7 @@ def _compute(algorithm: str, path: str, given: str) -> Tuple[int, str]:
         if given:
             if actual == given:
                 return (0, f"{Checksum.print(algorithm, path, given)} {click.style('OK', fg='green')}")
-            return (1, f"{Checksum.print(algorithm, path, given)} {click.style(f'ACTUAL: {actual}', fg='red')}")
+            return (1, f"{Checksum.print(algorithm, path, given)} {click.style(f'BAD', fg='red')}")
         return (0, Checksum.print(algorithm, path, actual))
 
 def _algorithm_mode(algorithm: str, path: str, given: str, parallel: bool) -> None:

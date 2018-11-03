@@ -26,7 +26,7 @@ $ hb -a md5 hello.txt -g 77060c267470021a97392b815138733e
 md5 (hello.txt) = 77060c267470021a97392b815138733e OK
 
 $ hb -a md5 hello.txt -g 0123456789abcdef
-md5 (hello.txt) = 0123456789abcdef ACTUAL: 77060c267470021a97392b815138733e
+md5 (hello.txt) = 0123456789abcdef BAD
 ```
 
 Checksums can be read from a file:
