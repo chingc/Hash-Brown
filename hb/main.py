@@ -20,32 +20,6 @@ class Checksum():
     SUPPORTED = ("blake2b", "blake2s", "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "adler32", "crc32")
     VERSION = "1.4.2"
 
-    @staticmethod
-    def parse(path: str) -> List[Tuple[str, ...]]:
-        """Parse lines from a checksum file."""
-        parsed_lines = []
-        with Path(path).open("r") as lines:
-            for line in lines:
-                line = line.strip()
-                if not line or line[0] == "#":  # skip blank lines and comments
-                    continue
-                match = re.match(r"(\w+) \((.+)\) = (\w+)", line)
-                if not match:
-                    raise ValueError(f"Bad line in checksum file: '{line}'")
-                parsed_lines.append(tuple(match.group(1, 2, 3)))
-        return parsed_lines
-
-    @staticmethod
-    def print(algorithm: str, path: str, checksum: str) -> str:
-        """BSD style checksum output."""
-        return f"{algorithm} ({Path(path)}) = {checksum}"
-
-    def __init__(self, path: str, threshold: int = 200) -> None:
-        self._path = Path(path)
-        self.checksums: Dict[str, str] = {}
-        self.filesize = self._path.stat().st_size
-        self.threshold = threshold
-
     @contextmanager
     def _progress_open(self) -> Generator:
         def _p(file: IO) -> None:
@@ -80,22 +54,11 @@ class Checksum():
                 result = update(line, result)
         return hex(result)[2:].zfill(8)
 
-    def compute(self, algorithm: str) -> str:
-        """Compute a checksum."""
-        if algorithm not in Checksum.SUPPORTED:
-            raise ValueError(f"Unsupported algorithm: '{algorithm}'")
-        elif algorithm in ["adler32", "crc32"]:
-            result = self._zlib_compute(algorithm)
-        else:
-            result = self._hashlib_compute(algorithm)
-        self.checksums[algorithm] = result
-        return result
-
-    def get(self, algorithm: str) -> str:
-        """Same as `compute` but does not recalculate the checksum if it is already known."""
-        if algorithm in self.checksums:
-            return self.checksums[algorithm]
-        return self.compute(algorithm)
+    def __init__(self, path: str, threshold: int = 200) -> None:
+        self._path = Path(path)
+        self.checksums: Dict[str, str] = {}
+        self.filesize = self._path.stat().st_size
+        self.threshold = threshold
 
     @property
     def path(self) -> str:
@@ -157,3 +120,40 @@ class Checksum():
     def crc32(self) -> str:
         """crc32"""
         return self.get("crc32")
+
+    @staticmethod
+    def parse(path: str) -> List[Tuple[str, ...]]:
+        """Parse lines from a checksum file."""
+        parsed_lines = []
+        with Path(path).open("r") as lines:
+            for line in lines:
+                line = line.strip()
+                if not line or line[0] == "#":  # skip blank lines and comments
+                    continue
+                match = re.match(r"(\w+) \((.+)\) = (\w+)", line)
+                if not match:
+                    raise ValueError(f"Bad line in checksum file: '{line}'")
+                parsed_lines.append(tuple(match.group(1, 2, 3)))
+        return parsed_lines
+
+    @staticmethod
+    def print(algorithm: str, path: str, checksum: str) -> str:
+        """BSD style checksum output."""
+        return f"{algorithm} ({Path(path)}) = {checksum}"
+
+    def compute(self, algorithm: str) -> str:
+        """Compute a checksum."""
+        if algorithm not in Checksum.SUPPORTED:
+            raise ValueError(f"Unsupported algorithm: '{algorithm}'")
+        elif algorithm in ["adler32", "crc32"]:
+            result = self._zlib_compute(algorithm)
+        else:
+            result = self._hashlib_compute(algorithm)
+        self.checksums[algorithm] = result
+        return result
+
+    def get(self, algorithm: str) -> str:
+        """Same as `compute` but does not recalculate the checksum if it is already known."""
+        if algorithm in self.checksums:
+            return self.checksums[algorithm]
+        return self.compute(algorithm)
