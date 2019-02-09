@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hb"
-version = "1.4.2"
+version = "1.4.3"
 description = "A simple command-line utility for calculating checksums."
 license = "MIT"
 authors = ["Ching Chow <ching.chow.sc@gmail.com>"]
@@ -35,8 +35,10 @@ click = "^7.0"
 colorama = "^0.4.0"
 
 [tool.poetry.dev-dependencies]
-codecov = "^2.0"
-mypy = "^0.620.0"
+mypy = "^0.670.0"
 pylint = "^2.0"
-pytest = "^3.0"
-rope = "^0.10.7"
+pytest = "^4.0"
+pytest-cov = "^2.6"
+pytest-mock = "^1.10"
+pytest-xdist = "^1.26"
+rope = "^0.11.0"
