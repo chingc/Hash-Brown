@@ -27,18 +27,18 @@ class Checksum():
                 print(f"{int(file.tell() / self.filesize * 100)}%", end="\r", file=stderr)
                 sleep(0.2)
             print("    ", end="\r", file=stderr)  # clear the progress display
-        with open(self._path, "rb") as lines:
-            thread = Thread(target=_p, args=(lines,))
+        with open(self._path, "rb") as stream:
+            thread = Thread(target=_p, args=(stream,))
             if self.filesize > self.threshold * 1024 * 1024:
                 thread.start()
-            yield lines
+            yield stream
         if thread.is_alive():
             thread.join()
 
     def _hashlib_compute(self, name: str) -> str:
         result = hashlib.new(name)
-        with self._progress_open() as lines:
-            for line in lines:
+        with self._progress_open() as stream:
+            for line in stream:
                 result.update(line)
         return result.hexdigest()
 
@@ -49,8 +49,8 @@ class Checksum():
         elif name == "crc32":
             result = 0
             update = zlib.crc32
-        with self._progress_open() as lines:
-            for line in lines:
+        with self._progress_open() as stream:
+            for line in stream:
                 result = update(line, result)
         return hex(result)[2:].zfill(8)
 
@@ -125,15 +125,16 @@ class Checksum():
     def parse(path: str) -> List[Tuple[str, ...]]:
         """Parse lines from a checksum file."""
         parsed_lines = []
-        with Path(path).open("r") as lines:
-            for line in lines:
+        with Path(path).open("r") as stream:
+            for line in stream:
                 line = line.strip()
                 if not line or line[0] == "#":  # skip blank lines and comments
                     continue
                 match = re.match(r"(\w+) \((.+)\) = (\w+)", line)
-                if not match:
+                if match:
+                    parsed_lines.append(tuple(match.group(1, 2, 3)))
+                else:
                     raise ValueError(f"Bad line in checksum file: '{line}'")
-                parsed_lines.append(tuple(match.group(1, 2, 3)))
         return parsed_lines
 
     @staticmethod

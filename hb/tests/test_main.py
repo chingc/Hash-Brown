@@ -2,7 +2,7 @@
 
 from typing import List
 
-import pytest
+from pytest import raises
 
 from hb.main import Checksum
 
@@ -11,7 +11,7 @@ def test_supported(supported: str) -> None:
     assert list(Checksum.SUPPORTED) == supported
 
 def test_unsupported() -> None:
-    with pytest.raises(ValueError):
+    with raises(ValueError):
         Checksum(".").compute("unsupported")
 
 # def test_version(version: str) -> None:
@@ -26,7 +26,7 @@ def test_parse_success(good_checklists: List[str]) -> None:
 
 def test_parse_failure(bad_checklists: List[str]) -> None:
     for checklist in bad_checklists:
-        with pytest.raises(ValueError):
+        with raises(ValueError):
             Checksum.parse(checklist)
 
 def test_print() -> None:
