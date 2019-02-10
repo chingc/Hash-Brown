@@ -7,8 +7,8 @@ from pytest import raises
 from hb.main import Checksum
 
 
-def test_supported(supported: str) -> None:
-    assert list(Checksum.SUPPORTED) == supported
+def test_supported(supported: List[str]) -> None:
+    assert Checksum.SUPPORTED == tuple(supported)
 
 def test_unsupported() -> None:
     with raises(ValueError):
@@ -71,12 +71,16 @@ def test_adler32(fox: Checksum) -> None:
 def test_crc32(fox: Checksum) -> None:
     assert fox.crc32 == "eb50cc6a"
 
-def test_memoization(fox: Checksum) -> None:
-    # we should actually check that compute is only called once with a mock
-    assert fox.get("md5") == "0d7006cd055e94cf614587e1d2ae0c8e"
-    assert fox.get("crc32") == "eb50cc6a"
+def test_memoization(mocker, fox: Checksum) -> None:
+    mocker.spy(fox, 'get')
+    mocker.spy(fox, 'compute')
 
-    # should not actually go through full compute again
-    # this covers some lines for code coverage
     assert fox.md5 == "0d7006cd055e94cf614587e1d2ae0c8e"
+    assert fox.md5 == "0d7006cd055e94cf614587e1d2ae0c8e"
+    assert fox.get.call_count == 2
+    assert fox.compute.call_count == 1
+
     assert fox.crc32 == "eb50cc6a"
+    assert fox.crc32 == "eb50cc6a"
+    assert fox.get.call_count == 4
+    assert fox.compute.call_count == 2
