@@ -5,7 +5,7 @@ from pathlib import Path
 from sys import stderr
 from threading import Thread
 from time import sleep
-from typing import Dict, Generator, IO, List, Tuple
+from typing import Dict, Generator, IO, List, Tuple, Union
 
 import hashlib
 import re
@@ -54,7 +54,7 @@ class Checksum():
                 result = update(line, result)
         return hex(result)[2:].zfill(8)
 
-    def __init__(self, path: str, threshold: int = 200) -> None:
+    def __init__(self, path: Union[Path, str], threshold: int = 200) -> None:
         self._path = Path(path)
         self.checksums: Dict[str, str] = {}
         self.filesize = self._path.stat().st_size
@@ -66,7 +66,7 @@ class Checksum():
         return str(self._path)
 
     @path.setter
-    def path(self, path: str) -> None:
+    def path(self, path: Union[Path, str]) -> None:
         """Set new path and clear the checksums dictionary."""
         self._path = Path(path)
         self.checksums = {}
@@ -122,7 +122,7 @@ class Checksum():
         return self.get("crc32")
 
     @staticmethod
-    def parse(path: str) -> List[Tuple[str, ...]]:
+    def parse(path: Union[Path, str]) -> List[Tuple[str, ...]]:
         """Parse lines from a checksum file."""
         parsed_lines = []
         with Path(path).open("r") as stream:
@@ -138,7 +138,7 @@ class Checksum():
         return parsed_lines
 
     @staticmethod
-    def print(algorithm: str, path: str, checksum: str) -> str:
+    def print(algorithm: str, path: Union[Path, str], checksum: str) -> str:
         """BSD style checksum output."""
         return f"{algorithm} ({Path(path)}) = {checksum}"
 
