@@ -18,16 +18,6 @@ def supported():
     return [x for x in sorted(algorithms_guaranteed) if "_" not in x] + ["adler32", "crc32"]
 
 @fixture
-def version():
-    """Version from the pyproject.toml file."""
-    ver = "Cannot find version!"
-    with open(CWD.parent / "pyproject.toml", "r") as stream:
-        for line in stream:
-            if line.startswith("version = "):
-                ver = line.strip().split(" = ")[1][1:-1]
-    return ver
-
-@fixture
 def good_checklists():
     """All good checklists."""
     return [FIXTURES / f"checklist_good_0{i}.txt" for i in range(1, 2)]

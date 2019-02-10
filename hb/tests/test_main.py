@@ -12,9 +12,6 @@ def test_unsupported():
     with raises(ValueError):
         Checksum(".").compute("unsupported")
 
-# def test_version(version):
-#     assert Checksum.VERSION == version
-
 def test_parse_success(good_checklists):
     for checklist in good_checklists:
         for algorithm, path, checksum in Checksum.parse(checklist):
@@ -70,8 +67,8 @@ def test_crc32(fox):
     assert fox.crc32 == "eb50cc6a"
 
 def test_memoization(mocker, fox):
-    mocker.spy(fox, 'get')
-    mocker.spy(fox, 'compute')
+    mocker.spy(fox, "get")
+    mocker.spy(fox, "compute")
 
     assert fox.md5 == "0d7006cd055e94cf614587e1d2ae0c8e"
     assert fox.md5 == "0d7006cd055e94cf614587e1d2ae0c8e"

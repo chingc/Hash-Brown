@@ -50,8 +50,15 @@ def _check_mode(path: str, quiet: bool, parallel: bool) -> None:
             future = executor.submit(_compute, algorithm, filename, given)
             future.add_done_callback(lambda f: _cb(f.result()[0], f.result()[1]))
 
+def _version():
+    with open(Path(__file__).parent.parent / "pyproject.toml", "r") as stream:
+        for line in stream:
+            if line.startswith("version = "):
+                return line.strip().split(" = ")[1][1:-1]
+    raise Warning("Cannot find version information")
 
-@click.version_option(version=Checksum.VERSION)
+
+@click.version_option(version=_version())
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
 @click.option("-a", "--algorithm", type=click.Choice(Checksum.SUPPORTED))
 @click.option("-c", "--check", is_flag=True, help="Read checksums from a file.")
