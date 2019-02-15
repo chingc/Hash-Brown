@@ -1,126 +1,162 @@
+---
+
+python_versions:
+  - &py37 3.7.2
+  - &py36 3.6.8
+
+set_python: &set_python
+  parameters:
+    lint:
+      type: boolean
+      default: false
+      description: Set true to lint
+    tag:
+      type: string
+      default: latest
+      description: Docker tag for circleci/python
+  docker:
+    - image: circleci/python:<< parameters.tag >>
+      environment:
+        TZ: America/New_York
+
+restore: &restore
+  keys:
+    - &pk python-<< parameters.tag >>-pip-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
+    - python-<< parameters.tag >>-pip-cache-v1-{{ .Branch }}
+    - python-<< parameters.tag >>-pip-cache-v1
+
+save: &save
+  key: *pk
+  paths:
+    - ~/.cache/pypoetry/virtualenvs
+
 version: 2.1
-
-executors:
-
-  python:
-
-    parameters:
-      tag:
-        description: circleci/python docker tag
-        type: string
-
-    docker:
-      - image: circleci/python:<< parameters.tag >>
 
 commands:
 
-  dependencies:
-
+  poetry:
     steps:
       - run:
-          name: Install Dependencies
+          name: Install poetry
           command: |
-            python -m venv .venv
-            source .venv/bin/activate
-            python -m pip install --upgrade pip setuptools
-            pip install poetry
-            poetry config settings.virtualenvs.in-project true
+            curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+            echo 'source ~/.poetry/env' >> ${BASH_ENV}
+
+  dependencies:
+    steps:
+      - run:
+          name: Install dependencies
+          command: |
             poetry install
 
-jobs:
+  lint:
+    steps:
+      - run:
+          name: Pylint
+          command: |
+            poetry run pylint hb
+          when: always
+      - run:
+          name: Mypy
+          command: |
+            echo "Skipping"
+            # poetry run mypy hb
+          when: always
 
   test:
-
-    parameters:
-      tag:
-        description: circleci/python docker tag
-        type: string
-
-    executor:
-      name: python
-      tag: << parameters.tag >>
-
     steps:
-      - checkout
-
-      - dependencies
-
       - run:
           name: Pytest
           command: |
-            source .venv/bin/activate
-            poetry run coverage run -m pytest --junit-xml=test-results/pytest/results.xml
-
+            poetry run coverage run -m pytest -v --durations=5 --junit-xml=test-results/pytest/results.xml
+      - run:
+          name: Coverage
+          command: |
+            poetry run coverage html --include="hb/*" --directory=test-results/coverage
+            poetry run coverage report --include="hb/*"
       - run:
           name: Codecov
           command: |
-            source .venv/bin/activate
             poetry run codecov
 
+  artifacts:
+    steps:
       - store_test_results:
           path: test-results
-
       - store_artifacts:
           path: test-results
           destination: test-results
 
-  lint:
+jobs:
 
-    executor:
-      name: python
-      tag: 3.7.1
-
+  test:
+    <<: *set_python
     steps:
       - checkout
-
+      - restore_cache:
+          <<: *restore
+      - poetry
       - dependencies
+      - test
+      - when:
+          condition: << parameters.lint >>
+          steps:
+            - lint
+      - artifacts
 
-      - run:
-          name: Mypy
-          command: |
-            source .venv/bin/activate
-            poetry run mypy --ignore-missing-imports --strict --allow-untyped-decorators hb
-            poetry run mypy --ignore-missing-imports --strict --allow-untyped-decorators tests
-
-      - run:
-          name: Pylint
-          # C0111: missing-docstring
-          # C0301: line-too-long
-          # C0321: multiple-statements
-          command: |
-            source .venv/bin/activate
-            poetry run pylint -d C0301 hb
-            poetry run pylint -d C0111,C0301,C0321 tests
+  warm:
+    <<: *set_python
+    steps:
+      - checkout
+      - restore_cache:
+          <<: *restore
+      - poetry
+      - dependencies
+      - save_cache:
+          <<: *save
 
 workflows:
 
   version: 2
 
   commit:
-
     jobs:
       - test:
-          name: python 3.7
-          tag: 3.7.1
+          name: Python 3.7
+          tag: *py37
+          lint: true
       - test:
-          name: python 3.6
-          tag: 3.6.7
-      - lint
+          name: Python 3.6
+          tag: *py36
 
   weekly:
-
     jobs:
       - test:
-          name: python 3.7
-          tag: 3.7.1
+          name: Weekly 3.7
+          tag: *py37
+          lint: true
       - test:
-          name: python 3.6
-          tag: 3.6.7
-      - lint
-
+          name: Weekly 3.6
+          tag: *py36
     triggers:
       - schedule:
-          cron: "1 0 * * 1"
+          cron: 0 23 * * 0
+          filters:
+            branches:
+              only:
+                - master
+
+  warming:
+    jobs:
+      - warm:
+          name: Cache 3.7
+          tag: *py37
+      - warm:
+          name: Cache 3.6
+          tag: *py36
+    triggers:
+      - schedule:
+          cron: 0 22 * * 0
           filters:
             branches:
               only:

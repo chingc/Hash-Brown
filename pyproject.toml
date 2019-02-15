@@ -35,6 +35,7 @@ click = "^7.0"
 colorama = "^0.4.0"
 
 [tool.poetry.dev-dependencies]
+codecov = "^2.0"
 mypy = "^0.670.0"
 pylint = "^2.0"
 pytest = "^4.0"
