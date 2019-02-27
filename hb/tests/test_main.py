@@ -66,6 +66,10 @@ def test_adler32(fox):
 def test_crc32(fox):
     assert fox.crc32 == "eb50cc6a"
 
+def test_progress_meter(fox):
+    fox.threshold = 0
+    assert fox.sha1 == "9c04cd6372077e9b11f70ca111c9807dc7137e4b"
+
 def test_memoization(mocker, fox):
     mocker.spy(fox, "get")
     mocker.spy(fox, "compute")

@@ -31,8 +31,3 @@ def bad_checklists():
 def fox():
     """Checksum object."""
     return Checksum(FIXTURES / "fox.txt")
-
-@fixture
-def fox_progress():
-    """Checksum object with zero threshold."""
-    return Checksum(FIXTURES / "fox.txt", threshold=0)
