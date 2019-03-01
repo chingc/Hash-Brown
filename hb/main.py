@@ -143,12 +143,12 @@ class Checksum():
 
     def compute(self, algorithm: str) -> str:
         """Compute a checksum."""
-        if algorithm not in Checksum.SUPPORTED:
-            raise ValueError(f"Unsupported algorithm: '{algorithm}'")
-        elif algorithm in ["adler32", "crc32"]:
+        if algorithm in ["adler32", "crc32"]:
             result = self._zlib_compute(algorithm)
-        else:
+        elif algorithm in Checksum.SUPPORTED:
             result = self._hashlib_compute(algorithm)
+        else:
+            raise ValueError(f"Unsupported algorithm: '{algorithm}'")
         self.checksums[algorithm] = result
         return result
 
