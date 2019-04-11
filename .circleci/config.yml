@@ -1,5 +1,5 @@
 python_versions:
-  - &py37 3.7.2
+  - &py37 3.7.3
   - &py36 3.6.8
 
 set_python: &set_python
@@ -26,39 +26,32 @@ restore: &restore
 save: &save
   key: *pk
   paths:
-    - ~/.cache/pypoetry/virtualenvs
+    - .venv
 
 version: 2.1
 
 commands:
-
-  poetry:
-    steps:
-      - run:
-          name: Install poetry
-          command: |
-            curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-            echo 'source ~/.poetry/env' >> ${BASH_ENV}
 
   dependencies:
     steps:
       - run:
           name: Install dependencies
           command: |
+            poetry config settings.virtualenvs.in-project true
             poetry install
+            echo 'source .venv/bin/activate' >> ${BASH_ENV}
 
   lint:
     steps:
       - run:
           name: Pylint
           command: |
-            poetry run pylint hb
+            pylint hb
           when: always
       - run:
           name: Mypy
           command: |
-            echo "Skipping"
-            # poetry run mypy hb
+            mypy hb
           when: always
 
   test:
@@ -66,16 +59,16 @@ commands:
       - run:
           name: Pytest
           command: |
-            poetry run coverage run -m pytest -v --durations=5 --junit-xml=test-results/pytest/results.xml
+            coverage run -m pytest --junit-xml=test-results/pytest/results.xml
       - run:
           name: Coverage
           command: |
-            poetry run coverage html --include="hb/*" --directory=test-results/coverage
-            poetry run coverage report --include="hb/*"
+            coverage html --include="hb/*" --directory=test-results/coverage
+            coverage report --include="hb/*"
       - run:
           name: Codecov
           command: |
-            poetry run codecov
+            codecov
 
   artifacts:
     steps:
@@ -93,7 +86,6 @@ jobs:
       - checkout
       - restore_cache:
           <<: *restore
-      - poetry
       - dependencies
       - test
       - when:
@@ -108,7 +100,6 @@ jobs:
       - checkout
       - restore_cache:
           <<: *restore
-      - poetry
       - dependencies
       - save_cache:
           <<: *save
