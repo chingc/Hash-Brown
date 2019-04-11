@@ -7,6 +7,7 @@ from time import time
 from typing import Any, Tuple
 
 import click
+import toml
 
 from hb.main import Checksum
 
@@ -50,12 +51,9 @@ def _check_mode(path: str, quiet: bool, parallel: bool) -> None:
             future = executor.submit(_compute, algorithm, filename, given)
             future.add_done_callback(lambda f: _cb(f.result()[0], f.result()[1]))
 
-def _version():
-    with open(Path(__file__).parent.parent / "pyproject.toml", "r") as stream:
-        for line in stream:
-            if line.startswith("version = "):
-                return line.strip().split(" = ")[1][1:-1]
-    raise Warning("Cannot find version information")
+def _version() -> str:
+    parsed = toml.load(Path(__file__).parent.parent / "pyproject.toml")
+    return str(parsed["tool"]["poetry"]["version"])
 
 
 @click.version_option(version=_version())
