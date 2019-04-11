@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hb"
-version = "1.4.3"
+version = "1.5"
 description = "A simple command-line utility for calculating checksums."
 license = "MIT"
 authors = ["Ching Chow <ching.chow.sc@gmail.com>"]
