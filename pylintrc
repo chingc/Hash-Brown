@@ -12,6 +12,10 @@ ignore-patterns=
 # number of processors available to use.
 jobs=0
 
+# List of plugins (as comma separated values of python modules names) to load,
+# usually to register additional checkers.
+load-plugins=pylint.extensions.mccabe
+
 
 [MESSAGES CONTROL]
 
@@ -27,6 +31,14 @@ jobs=0
 disable=line-too-long
 
 
+[REPORTS]
+
+# Set the output format. Available formats are text, parseable, colorized, json
+# and msvs (visual studio). You can also give a reporter class, e.g.
+# mypackage.mymodule.MyReporterClass.
+output-format=colorized
+
+
 [BASIC]
 
 # Good variable names which should always be accepted, separated by a comma.
@@ -40,3 +52,22 @@ good-names=i,
 # Regular expression which should only match function or class names that do
 # not require a docstring.
 no-docstring-rgx=^(_|test)
+
+
+[FORMAT]
+
+# Expected format of line ending, e.g. empty (any line ending), LF or CRLF.
+expected-line-ending-format=LF
+
+
+[LOGGING]
+
+# Format style used to check logging format string. `old` means using %
+# formatting, while `new` is for `{}` formatting.
+logging-format-style=new
+
+
+[DESIGN]
+
+# McCabe complexity cyclomatic threshold
+max-complexity=10

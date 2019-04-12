@@ -1,45 +1,53 @@
-python_versions:
+aliases:
+
   - &py37 3.7.3
   - &py36 3.6.8
 
-set_python: &set_python
-  parameters:
-    lint:
-      type: boolean
-      default: false
-      description: Set true to lint
-    tag:
-      type: string
-      default: latest
-      description: Docker tag for circleci/python
-  docker:
-    - image: circleci/python:<< parameters.tag >>
-      environment:
-        TZ: America/New_York
+  - &args
+    parameters:
+      version:
+        type: string
+        default: latest
 
-restore: &restore
-  keys:
-    - &pk python-<< parameters.tag >>-pip-cache-v1-{{ .Branch }}-{{ checksum "poetry.lock" }}
-    - python-<< parameters.tag >>-pip-cache-v1-{{ .Branch }}
-    - python-<< parameters.tag >>-pip-cache-v1
+  - &docker_env
+    docker:
+      - image: circleci/python:<< parameters.version >>
+        environment:
+          TZ: America/New_York
 
-save: &save
-  key: *pk
-  paths:
-    - .venv
+  - &restore_cache
+    restore_cache:
+      keys:
+        - &pk v1-python-<< parameters.version >>-cache-{{ .Branch }}-{{ checksum "poetry.lock" }}
+        - v1-python-<< parameters.version >>-cache-{{ .Branch }}
+        - v1-python-<< parameters.version >>-cache
+
+  - &save_cache
+    save_cache:
+      key: *pk
+      paths:
+        - .venv
 
 version: 2.1
 
 commands:
 
-  dependencies:
+  artifacts:
+    steps:
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: test-results
+          destination: test-results
+
+  install:
     steps:
       - run:
           name: Install dependencies
           command: |
             poetry config settings.virtualenvs.in-project true
             poetry install
-            echo 'source .venv/bin/activate' >> ${BASH_ENV}
+            echo 'source .venv/bin/activate' >> "${BASH_ENV}"
 
   lint:
     steps:
@@ -59,74 +67,51 @@ commands:
       - run:
           name: Pytest
           command: |
-            coverage run -m pytest --junit-xml=test-results/pytest/results.xml
+            pytest
       - run:
           name: Coverage
           command: |
-            coverage html --include="hb/*" --directory=test-results/coverage
-            coverage report --include="hb/*"
-      - run:
-          name: Codecov
-          command: |
+            coverage report
+            coverage html --directory=test-results/coverage
             codecov
-
-  artifacts:
-    steps:
-      - store_test_results:
-          path: test-results
-      - store_artifacts:
-          path: test-results
-          destination: test-results
 
 jobs:
 
   test:
-    <<: *set_python
+    <<: *args
+    <<: *docker_env
     steps:
       - checkout
-      - restore_cache:
-          <<: *restore
-      - dependencies
+      - *restore_cache
+      - install
       - test
-      - when:
-          condition: << parameters.lint >>
-          steps:
-            - lint
+      - lint
       - artifacts
 
-  warm:
-    <<: *set_python
+  cache:
+    <<: *args
+    <<: *docker_env
     steps:
       - checkout
-      - restore_cache:
-          <<: *restore
-      - dependencies
-      - save_cache:
-          <<: *save
+      - *restore_cache
+      - install
+      - *save_cache
 
 workflows:
 
   version: 2
 
-  commit:
+  commit: &test
     jobs:
       - test:
           name: Python 3.7
-          tag: *py37
-          lint: true
+          version: *py37
       - test:
           name: Python 3.6
-          tag: *py36
+          version: *py36
 
   weekly:
-    jobs:
-      - test:
-          name: Weekly 3.7
-          tag: *py37
-          lint: true
-      - test:
-          name: Weekly 3.6
-          tag: *py36
+    <<: *test
     triggers:
       - schedule:
           cron: 0 23 * * 0
@@ -135,14 +120,14 @@ workflows:
               only:
                 - master
 
-  warming:
+  cache:
     jobs:
-      - warm:
+      - cache:
           name: Cache 3.7
-          tag: *py37
-      - warm:
+          version: *py37
+      - cache:
           name: Cache 3.6
-          tag: *py36
+          version: *py36
     triggers:
       - schedule:
           cron: 0 22 * * 0
