@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "hb"
-version = "1.4.2"
-description = "A simple command-line utility for calculating checksums."
-license = "MIT"
-authors = ["Ching Chow <ching.chow.sc@gmail.com>"]
+version = "2.0.0"
+description = "A simple utility for calculating hashes and checksums."
+authors = ["Ching Chow <bright.water2722@fastmail.com>"]
 readme = "README.md"
+license = "MIT"
 homepage = "https://github.com/chingc/Hash-Brown"
 repository = "https://github.com/chingc/Hash-Brown"
 documentation = "https://github.com/chingc/Hash-Brown"
@@ -26,17 +26,18 @@ classifiers = [
     "Topic :: Utilities"
 ]
 
-[tool.poetry.scripts]
-hb = "hb.cli:cli"
 
 [tool.poetry.dependencies]
-python = "^3.6"
-click = "^7.0"
-colorama = "^0.4.0"
+python = "^3.11"
 
-[tool.poetry.dev-dependencies]
-codecov = "^2.0"
-mypy = "^0.620.0"
-pylint = "^2.0"
-pytest = "^3.0"
-rope = "^0.10.7"
+
+[tool.poetry.group.test.dependencies]
+flake8 = "^6.0.0"
+mypy = "^0.991"
+pylint = "^2.15.9"
+pytest = "^7.2.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
