@@ -1,3 +1,0 @@
-# missing checksum
-
-md5 (test.txt) =
