@@ -65,7 +65,10 @@ class HashBrown:
                     for line in lines:
                         digest.update(line)
                         self.tell = lines.tell()
-                self.hexdigest = digest.hexdigest()
+                if self.algo.startswith("shake_"):
+                    self.hexdigest = digest.hexdigest(64)  # type: ignore
+                else:
+                    self.hexdigest = digest.hexdigest()
 
         self.tell = self.filesize
         return self.hexdigest
