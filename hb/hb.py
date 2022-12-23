@@ -14,10 +14,11 @@ import zlib
 
 class HashBrown:
     """Hash Brown"""
+
     def __init__(self, algo, path) -> None:
         self.algo = algo.lower()
         self.filesize = os.path.getsize(path)
-        self.hexdigest = None
+        self.hexdigest = ""
         self.path = Path(path)
         self.tell = 0
 
@@ -35,7 +36,7 @@ class HashBrown:
                 time.sleep(0.5)
 
         Thread(target=_progress).start()
-        with open(self.path, "rb") as lines:
+        with open(self.path, mode="rb") as lines:
             yield lines
 
     def compute(self) -> str:
@@ -45,26 +46,26 @@ class HashBrown:
 
         match self.algo:
             case "adler32":
-                result = 1
+                checksum = 1
                 with self.open() as lines:
                     for line in lines:
-                        result = zlib.adler32(line, result)
+                        checksum = zlib.adler32(line, checksum)
                         self.tell = lines.tell()
-                self.hexdigest = hex(result).removeprefix("0x").zfill(8)
+                self.hexdigest = hex(checksum).removeprefix("0x").zfill(8)
             case "crc32":
-                result = 0
+                checksum = 0
                 with self.open() as lines:
                     for line in lines:
-                        result = zlib.crc32(line, result)
+                        checksum = zlib.crc32(line, checksum)
                         self.tell = lines.tell()
-                self.hexdigest = hex(result).removeprefix("0x").zfill(8)
+                self.hexdigest = hex(checksum).removeprefix("0x").zfill(8)
             case _:
-                result = hashlib.new(self.algo)
+                digest = hashlib.new(self.algo)
                 with self.open() as lines:
                     for line in lines:
-                        result.update(line)
+                        digest.update(line)
                         self.tell = lines.tell()
-                self.hexdigest = result.hexdigest()
+                self.hexdigest = digest.hexdigest()
 
         self.tell = self.filesize
         return self.hexdigest
