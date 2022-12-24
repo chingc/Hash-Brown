@@ -83,8 +83,9 @@ def compute(algo: str, path: str) -> str:
     return HashBrown(algo, path).pprint()
 
 
-def scan(path: str) -> None:
+def scan(path: str, stdout_only: bool = True) -> None | list[str]:
     """Scan a file of hexdigests to check if they match."""
+    results = []
     with open(Path(path), encoding="utf-8") as lines:
         for i, line in enumerate(lines, start=1):
             line = line.strip()
@@ -93,6 +94,10 @@ def scan(path: str) -> None:
             if match := re.match(r"^([0-9A-Fa-f]+) (\w+) (.+)$", line):
                 given, algo, path = match.group(1, 2, 3)
                 computed = HashBrown(algo, path).compute()
-                print(f"{'OK' if computed == given else 'BAD'} {algo} {path}")
+                result = f"{'OK' if computed == given else 'BAD'} {algo} {path}"
             else:
-                print(f"\nUnable to read line {i}: '{line}'\n")
+                result = f"\nUnable to read line {i}: '{line}'\n"
+            print(result)
+            if not stdout_only:
+                results.append(result)
+    return None if stdout_only else results
