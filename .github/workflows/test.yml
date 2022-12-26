@@ -7,10 +7,30 @@ on:
       - main
 
 concurrency:
-  group: test-${{ github.head_ref || github.ref }}
+  group: test-${{ github.actor }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - run: pipx install poetry
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "poetry"
+
+      - run: poetry install
+
+      - run: poetry run mypy --pretty --strict .
+
+      - run: poetry run flake8 --ignore=E501 .
+
   test:
     strategy:
       fail-fast: false
@@ -19,6 +39,7 @@ jobs:
         python-version: ["3.11"]
 
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
 
     steps:
       - uses: actions/checkout@v3
