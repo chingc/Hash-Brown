@@ -9,13 +9,14 @@ import os
 import re
 import sys
 import time
+import typing
 import zlib
 
 
 class HashBrown:
     """Hash Brown"""
 
-    def __init__(self, algo, path) -> None:
+    def __init__(self, algo: str, path: str | Path) -> None:
         self.algo = algo.lower()
         self.filesize = os.path.getsize(path)
         self.hexdigest = ""
@@ -23,7 +24,7 @@ class HashBrown:
         self.tell = 0
 
     @contextmanager
-    def open(self) -> Generator:
+    def open(self) -> Generator[typing.BinaryIO, None, None]:
         """File open with progress tracker."""
 
         def _progress() -> None:
@@ -78,12 +79,12 @@ class HashBrown:
         return f"{self.compute()} {self.algo} {self.path}"
 
 
-def compute(algo: str, path: str) -> str:
+def compute(algo: str, path: str | Path) -> str:
     """Convenience function to compute and pprint."""
     return HashBrown(algo, path).pprint()
 
 
-def scan(path: str, stdout_only: bool = True) -> None | list[str]:
+def scan(path: str | Path, stdout_only: bool = True) -> None | list[str]:
     """Scan a file of hexdigests to check if they match."""
     results = []
     with open(Path(path), encoding="utf-8") as lines:
