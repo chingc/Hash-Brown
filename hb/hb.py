@@ -13,15 +13,23 @@ import typing
 import zlib
 
 
+class NotAFileError(OSError):
+    pass
+
+
 class HashBrown:
     """Hash Brown"""
 
     def __init__(self, algo: str, path: str | Path) -> None:
-        self.algo = algo.lower()
-        self.filesize = os.path.getsize(path)
-        self.hexdigest = ""
-        self.path = Path(path)
-        self.tell = 0
+        path = Path(path)
+        if path.is_file():
+            self.algo = algo.lower()
+            self.filesize = os.path.getsize(path)
+            self.hexdigest = ""
+            self.path = path
+            self.tell = 0
+        else:
+            raise NotAFileError(f"Skipping '{path}' because it is not a file")
 
     @contextmanager
     def open(self) -> Generator[typing.BinaryIO, None, None]:
