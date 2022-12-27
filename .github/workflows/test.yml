@@ -29,9 +29,11 @@ jobs:
 
       - run: poetry run black .
 
-      - run: poetry run flake8 --ignore=E501 .
+      - run: poetry run isort .
 
-      - run: poetry run mypy --pretty --strict .
+      - run: poetry run flake8 .
+
+      - run: poetry run mypy .
 
       - run: poetry run bandit --recursive hb
 
