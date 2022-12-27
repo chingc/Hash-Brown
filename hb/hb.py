@@ -1,9 +1,3 @@
-"""hb.py"""
-
-from contextlib import contextmanager
-from pathlib import Path
-from threading import Thread
-from typing import Generator
 import hashlib
 import os
 import re
@@ -11,6 +5,10 @@ import sys
 import time
 import typing
 import zlib
+from contextlib import contextmanager
+from pathlib import Path
+from threading import Thread
+from typing import Generator
 
 
 class NotAFileError(OSError):

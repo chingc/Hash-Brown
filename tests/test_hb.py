@@ -1,7 +1,4 @@
-"""test_hb.py"""
-
 # mypy: ignore-errors
-# pylint: disable=W
 
 import hashlib
 import os
