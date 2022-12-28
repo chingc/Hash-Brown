@@ -1,8 +1,6 @@
 # Hash Brown
 
-[![CircleCI](https://circleci.com/gh/chingc/Hash-Brown.svg?style=shield)](https://circleci.com/gh/chingc/workflows/Hash-Brown) [![codecov](https://codecov.io/gh/chingc/Hash-Brown/branch/master/graph/badge.svg)](https://codecov.io/gh/chingc/Hash-Brown) [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE) [![PyPI](https://img.shields.io/pypi/v/hb.svg)](https://pypi.org/project/hb/)
-
-A simple command-line utility for calculating checksums.
+A convenient interface for hashlib and zlib.
 
 ## Install
 
@@ -12,51 +10,37 @@ pip install hb
 
 ## Usage
 
-Calculate the sha1 of a file:
-
 ```
-$ hb -a sha1 hello.txt
-sha1 (hello.txt) = 493a253abf93d705d67edeb463134a5c8752fc9d
-```
+>>> from hb import hb
 
-Check to see if file matches a given checksum:
+>>> hb.algorithms_guaranteed
+['adler32', 'blake2b', 'blake2s', 'crc32', 'md5', 'sha1', 'sha224', 'sha256', 'sha384', 'sha3_224', 'sha3_256', 'sha3_384', 'sha3_512', 'sha512', 'shake_128', 'shake_256']
 
-```
-$ hb -a md5 hello.txt -g 77060c267470021a97392b815138733e
-md5 (hello.txt) = 77060c267470021a97392b815138733e OK
+>>> hb.compute('sha1', 'hello.txt')
+'fab3fff31b58f5c50ce0213407eb3e047cf2a8dc sha1 hello.txt'
 
-$ hb -a md5 hello.txt -g 0123456789abcdef
-md5 (hello.txt) = 0123456789abcdef BAD
-```
-
-Checksums can be read from a file:
-
-```
-$ hb -c checksums.txt
-sha512 (hello.txt) = 493a253abf93d705d67edeb463134a5c8752fc9d OK
-sha512 (world.txt) = 683e4ee04e75e71a6dca42807001f00be1fcb2a3 OK
-sha512 (image.jpg) = f3a53e6c2743645f08faedadd7a2c57cbc38632f OK
-sha512 (video.mp4) = 03ba9191fc4cd74f218df58542643fbc07dca532 OK
+>>> hb.scan('hexdigests.txt')
+OK crc32 hello.txt
+OK md5 world.txt
+OK sha1 image.jpg
+OK sha256 video.mp4
 ```
 
-Hash Brown outputs its results in BSD style.  The checksum files are also BSD style.
-
-All files are read in binary mode.
-
-Globbing and recursive globbing are supported via `*` and `**` respectively.
-
-Dotfiles are not included when globbing and need to be specified explicitly.
-
-## Options
+From the command line
 
 ```
--a, --algorithm [blake2b|blake2s|md5|sha1|sha224|sha256|sha384|sha512|adler32|crc32]
--c, --check                     Read checksums from a file.
--g, --given TEXT                See if the given checksum `TEXT` matches the
-                                computed checksum. (use with -a)
--p, --parallel                  Process files in parallel.
--q, --quiet                     Hide results that are OK. (use with -c)
--t, --timer                     Display elapsed time in seconds.
---version                       Show the version and exit.
--h, --help                      Show this message and exit.
+$ python -m hb -c sha1 hello.txt
+fab3fff31b58f5c50ce0213407eb3e047cf2a8dc sha1 hello.txt
+
+$ cat hexdigests.txt
+71d4f5e9 crc32 hello.txt
+039c6a18baa8d77474b61fac86aeb7c7 md5 world.txt
+ff0023686cd30938c2eade9b08e1507747d7fbf6 sha1 image.jpg
+006e7bcdbdc2b77636b6ca695b7b68227b30c10130106b990f20d3ccace1cb9b sha256 video.mp4
+
+$ python -m hb -s hexdigests.txt
+OK crc32 hello.txt
+OK md5 world.txt
+OK sha1 image.jpg
+OK sha256 video.mp4
 ```

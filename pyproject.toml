@@ -1,42 +1,58 @@
 [tool.poetry]
 name = "hb"
-version = "1.4.2"
-description = "A simple command-line utility for calculating checksums."
-license = "MIT"
-authors = ["Ching Chow <ching.chow.sc@gmail.com>"]
+version = "2.0.0"
+description = "A convenient interface for hashlib and zlib."
+authors = ["Ching Chow <bright.water2722@fastmail.com>"]
 readme = "README.md"
+license = "MIT"
 homepage = "https://github.com/chingc/Hash-Brown"
 repository = "https://github.com/chingc/Hash-Brown"
 documentation = "https://github.com/chingc/Hash-Brown"
-keywords = ["checksum", "digest", "hash", "md5", "sha1"]
+keywords = ["checksum", "digest", "hashlib", "zlib", "crc32", "md5", "sha"]
 classifiers = [
     "Development Status :: 4 - Beta",
-    "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: System Administrators",
     "License :: OSI Approved :: MIT License",
     "Operating System :: MacOS",
     "Operating System :: Microsoft :: Windows",
-    "Operating System :: POSIX :: BSD",
     "Operating System :: POSIX :: Linux",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.6",
-    "Topic :: Security",
-    "Topic :: System :: Archiving",
     "Topic :: Utilities"
 ]
 
-[tool.poetry.scripts]
-hb = "hb.cli:cli"
 
 [tool.poetry.dependencies]
-python = "^3.6"
-click = "^7.0"
-colorama = "^0.4.0"
+python = "^3.11"
 
-[tool.poetry.dev-dependencies]
-codecov = "^2.0"
-mypy = "^0.620.0"
-pylint = "^2.0"
-pytest = "^3.0"
-rope = "^0.10.7"
+
+[tool.poetry.group.test.dependencies]
+bandit = "^1.7.4"
+black = "^22.12.0"
+flake8 = "^6.0.0"
+flake8-pyproject = "^1.2.2"
+isort = "^5.11.4"
+mypy = "^0.991"
+pytest = "^7.2.0"
+pytest-subtests = "^0.9.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.black]
+line-length = 999
+
+
+[tool.flake8]
+extend-ignore = ["E501"]
+
+
+[tool.isort]
+profile = "black"
+
+
+[tool.mypy]
+pretty = true
+strict = true
