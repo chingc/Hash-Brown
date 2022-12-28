@@ -41,12 +41,6 @@ def use_stdlib(algo, path):
 
 
 @pytest.fixture
-def guaranteed():
-    """Supported algos."""
-    return hashlib.algorithms_guaranteed | {"adler32", "crc32"}
-
-
-@pytest.fixture
 def rand_file():
     """Generate a random ~1MB file."""
     temp = tempfile.NamedTemporaryFile(mode="w", delete=False, encoding="utf-8")
@@ -59,10 +53,10 @@ def rand_file():
 
 
 @pytest.fixture
-def rand_digestfile(guaranteed, rand_file):
+def rand_digestfile(rand_file):
     """Generate a file of digests."""
     temp = tempfile.NamedTemporaryFile(mode="w", delete=False, encoding="utf-8")
-    for algo in guaranteed:
+    for algo in hb.algorithms_guaranteed:
         print(hb.compute(algo, rand_file), file=temp)
     temp.close()
     yield temp.name
@@ -70,18 +64,18 @@ def rand_digestfile(guaranteed, rand_file):
     assert not os.path.exists(temp.name)
 
 
-def test_compute(subtests, guaranteed, rand_file):
+def test_compute(subtests, rand_file):
     """Compare with direct usage of hashlib and zlib."""
-    for algo in guaranteed:
+    for algo in hb.algorithms_guaranteed:
         with subtests.test(algo=algo):
             with_hb = HashBrown(algo, rand_file).compute()
             with_stdlib = use_stdlib(algo, rand_file)
             assert with_hb == with_stdlib
 
 
-def test_pprint(subtests, guaranteed, rand_file):
+def test_pprint(subtests, rand_file):
     """Check pretty print output."""
-    for algo in guaranteed:
+    for algo in hb.algorithms_guaranteed:
         with subtests.test(algo=algo):
             with_hb = hb.compute(algo, rand_file)
             with_stdlib = f"{use_stdlib(algo, rand_file)} {algo} {rand_file}"

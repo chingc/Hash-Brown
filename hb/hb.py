@@ -108,3 +108,6 @@ def scan(path: str | Path, stdout_only: bool = True) -> None | list[str]:
             if not stdout_only:
                 results.append(result)
     return None if stdout_only else results
+
+
+algorithms_guaranteed = sorted(hashlib.algorithms_guaranteed | {"adler32", "crc32"})
